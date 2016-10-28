@@ -58,11 +58,12 @@ def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from):
                                 for mmm in pops_to_choose_from:
                                     itera=(fff,ffm,fmf,fmm,mff,mfm,mmf,mmm)
                                     if find_smallet_equivalence_class(itera) in combinations:
+                                        print(str(itera), "skipped")
                                         continue
                                     counter+=1
                                     combinations.append(itera)
-                                    #likelihoods.append(counter)
-                                    likelihoods.append(likelihood(list(itera)))
+                                    likelihoods.append(counter)
+                                    #likelihoods.append(likelihood(list(itera)))
     sorted_indexes=[i[0] for i in sorted(enumerate(likelihoods), key=lambda x: x[1])]
     res_dict=[]
     for i in range(10):
@@ -131,13 +132,15 @@ def get_best_of_size(listi, size):
     h= size//2
     bval= get_val(listi)
     for i in range(len(listi)//size):
-        cand=listi[:(size*i)]+\
-                listi[(size*i+h):(size*(i+1))]+\
-                listi[(size*i):(size*i+h)]+\
-                listi[(size*(i+1)):]
+        cand=band[:(size*i)]+\
+                band[(size*i+h):(size*(i+1))]+\
+                band[(size*i):(size*i+h)]+\
+                band[(size*(i+1)):]
+        
         cval=get_val(cand)
         if cval<bval:
             band=cand
+            bval=cval
     return band
 
 
@@ -158,6 +161,6 @@ if __name__ == '__main__':
     print(call_forward())
     #lik=test_model_likelihood(8)
     #print(maximize_likelihood_exhaustive(lik,["pop1","pop2"]))
-    print(find_smallet_equivalence_class(["a","b","c","a"]))
+    print(find_smallet_equivalence_class(["a","b","a","a","a","b","a","a"]))
     
     
