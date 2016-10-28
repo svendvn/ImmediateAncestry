@@ -17,8 +17,9 @@ def simulate_allele_frequencies(set_of_populations, length):
         res[j]=add
     return res
 
-def simulate_recombs(length):
-    return [(numpy.random.random())**4*max_recomb_rate for _ in range(length)]
+def simulate_recombs(length,avg_recomb_rate, skewness=4):
+    max_recomb_rate=(skewness+1)*avg_recomb_rate
+    return [(numpy.random.random())**skewness*max_recomb_rate for _ in range(length)]
         
 
 def simulate(allele_frequencies, pops, recombs):
