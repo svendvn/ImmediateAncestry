@@ -62,8 +62,8 @@ def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from):
                                         continue
                                     counter+=1
                                     combinations.append(itera)
-                                    likelihoods.append(counter)
-                                    #likelihoods.append(likelihood(list(itera)))
+                                    #likelihoods.append(counter)
+                                    likelihoods.append(likelihood(list(itera)))
     sorted_indexes=[i[0] for i in sorted(enumerate(likelihoods), key=lambda x: x[1])]
     res_dict=[]
     for i in range(10):
