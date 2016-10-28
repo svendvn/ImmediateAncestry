@@ -12,12 +12,14 @@ parser = ArgumentParser(usage=usage)
 parser.add_argument("--seq", type=str, nargs="+", default="simulated", help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
 parser.add_argument("--alleles", type=str, default="simulated", nargs="+", help="This is a list of files containing the allele frequencies. The first line of each file contains the population name")
 parser.add_argument("--recomb_map", type=str, default="simulated", help="This is a file containing the genetic distances between SNPs. It is a tab separated line of numbers.")
-parser.add_argument("--no_pops", type=int, default=6, help="If not indicated elsewhere this will be the number of populations.")
+parser.add_argument("--no_pops", type=int, default=2, help="If not indicated elsewhere this will be the number of populations.")
 parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="This is a list of populations to search for the best solution. Defaults to all the populations from the supplied allele files.")
-parser.add_argument("--SNPs", type=int, default=10, help="this is the number of SNPs to simulate")
-parser.add_argument("--reps", type=int, default=3, help="This is the number of independent segments of SNPs to draw if simulated")
-parser.add_argument("--true_pops", type=str, nargs="+", default="simulated", help="If simulations take place, this will be the true immediate ancestors.")
+parser.add_argument("--SNPs", type=int, default=1000, help="this is the number of SNPs to simulate")
+parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
+parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true immediate ancestors.")
 parser.add_argument('--outfile', type=str, default="immediate_ancestry_results.txt", help="This is the file in which the results are being stored.")
+parser.add_argument('--skewness', type=float, default=4, help="to be announced")
+parser.add_argument('--recomb_rate', type=float, default=0.1, help="tba")
 
 options = parser.parse_args()
 
@@ -70,14 +72,17 @@ else:
 if options.alleles=="simulated":
     if options.pops_to_search:
         pops=set(pops_to_search)
+    elif options.true_pops:
+        pops=set(options.true_pops)
     else:
         pops=["pop"+str(i) for i in range(1,options.no_pops+1)]
     all_allele_frequencies= [simulate_allele_frequencies(pops, length) for length in setup]
 if options.recomb_map=="simulated":
-    recombs=[simulate_recombs(length) for length in setup]
+    recombs=[simulate_recombs(length,options.recomb_rate, options.skewness) for length in setup]
 if options.seq=="simulated":
-    if options.true_pops!="simulated":
+    if options.true_pops:
         tpops=options.true_pops
+        assert len(tpops)==8, "true population not fully specified"
     else:
         tpops=[choice(pops) for _ in range(8)]
     seqs=[simulate(freq, tpops, recomb) for freq,recomb in zip(all_allele_frequencies, recombs)]
