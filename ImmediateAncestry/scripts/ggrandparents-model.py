@@ -12,11 +12,12 @@ parser = ArgumentParser(usage=usage)
 parser.add_argument("--seq", type=str, nargs="+", default="simulated", help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
 parser.add_argument("--alleles", type=str, default="simulated", nargs="+", help="This is a list of files containing the allele frequencies. The first line of each file contains the population name")
 parser.add_argument("--recomb_map", type=str, default="simulated", help="This is a file containing the genetic distances between SNPs. It is a tab separated line of numbers.")
-parser.add_argument("--no_pops", type=int, default=4, help="If not indicated elsewhere this will be the number of populations.")
+parser.add_argument("--no_pops", type=int, default=6, help="If not indicated elsewhere this will be the number of populations.")
 parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="This is a list of populations to search for the best solution. Defaults to all the populations from the supplied allele files.")
-parser.add_argument("--SNPs", type=int, default=20, help="this is the number of SNPs to simulate")
+parser.add_argument("--SNPs", type=int, default=10, help="this is the number of SNPs to simulate")
 parser.add_argument("--reps", type=int, default=3, help="This is the number of independent segments of SNPs to draw if simulated")
 parser.add_argument("--true_pops", type=str, nargs="+", default="simulated", help="If simulations take place, this will be the true immediate ancestors.")
+parser.add_argument('--outfile', type=str, default="immediate_ancestry_results.txt", help="This is the file in which the results are being stored.")
 
 options = parser.parse_args()
 
@@ -57,7 +58,7 @@ if options.seq!= "simulated":
         seqs.append(seq)
     setups.append(lengths)
 
-
+res=""
 print(setups)
 if setups:
     setup=setups[0]
@@ -80,14 +81,26 @@ if options.seq=="simulated":
     else:
         tpops=[choice(pops) for _ in range(8)]
     seqs=[simulate(freq, tpops, recomb) for freq,recomb in zip(all_allele_frequencies, recombs)]
-
-print(recombs)
-print(tpops)
     
+
+#print(recombs)
+
+
 likelihood=generate_likelihood_from_data(all_allele_frequencies, recombs, seqs)
+ad=maximize_likelihood_exhaustive(likelihood, pops)
 
-print(likelihood(["pop2"]*8))
-print(likelihood(tpops))
-print(maximize_likelihood_exhaustive(likelihood, pops))
-    
+if options.seq=="simulated":
+    res=res+" ".join(map(str,tpops))+" "+ str(likelihood(tpops))+  "\n"
+else:
+    res=res+"#"+"\n"
+print(res)
+
+for params,likel in ad:
+    res+=" ".join(map(str,params))+" "+str(likel)+"\n"
+
+print(res)
+
+with open(options.outfile, "w") as f:
+    f.write(res)
+
 
