@@ -22,12 +22,21 @@ def simulate_recombs(length,avg_recomb_rate, skewness=4):
     return [(numpy.random.random())**skewness*max_recomb_rate for _ in range(length)]
         
 
-def simulate(allele_frequencies, pops, recombs):
+def simulate(recombs, allele_frequencies=None, pops=None, ancestors="simulated"):
     """
     Simulates one sequence in the end containing 0,1 and 2s. pops is the true parameters, that is the ancestry of the four files.
     """
-        
-    seqs=sim_ancestries(allele_frequencies, pops)
+    
+    if ancestors=="simulated":
+        assert pops is not None, "populations to simulate from not specified."
+        assert allele_frequencies is not None, "allele frequencies to simulate from not specified."
+        seqs=sim_ancestries(allele_frequencies, pops)
+    
+    else:
+        seqs=ancestors
+    
+    #print(recombs)
+    #print(ancestors)
     #print(seqs)
     while len(seqs)>2:
         print(len(seqs))
@@ -44,9 +53,14 @@ def sim_next_gen(seqs, recombs):
     assert len(seqs)%2==0, "unequal number of parents"
     res=[]
     
-    for father,mother in zip(seqs[0::2], seqs[1::2]):
+    #print(seqs)
+    
+    for m,(father,mother) in enumerate(zip(seqs[0::2], seqs[1::2])):
         child=[]
         inherit_from=int(numpy.random.random()<0.5) # random to inherit from both of them.
+        print(len(recombs), len(father),len(mother))
+        if len(recombs)<(len(father)-1):
+            print("m",m)
         for n,fm_alleles in enumerate(zip(father,mother)):
             child.append(fm_alleles[inherit_from])
             if n<(len(father)-1):
