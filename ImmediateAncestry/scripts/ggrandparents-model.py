@@ -40,7 +40,7 @@ if options.alleles!="simulated":
             text=list(f.readlines())
             for i,j in zip(text[0::2], text[1::2]):
                 name=i.rstrip()
-                freqs=map(float, j.split())
+                freqs=list(map(float, j.split()))
                 allele_frequencies[name]=[min(0.99, max(0.01,freq)) for freq in freqs ]
                 if n==0:
                     pops.append(name)
@@ -56,7 +56,7 @@ if options.ancestor_files!="simulated" and options.seq=="simulated":
             text=list(f.readlines())
             for n,(i,j) in enumerate(zip(text[0::2], text[1::2])):
                 name=i.rstrip()
-                hap=map(int, j.split())
+                hap=list(map(int, j.split()))
                 haplotypes.append(hap)
             lengths.append(len(hap))
         all_ancestors.append(haplotypes)
@@ -72,15 +72,15 @@ if options.recomb_map != "simulated":
     recombs=[]
     for r in options.recomb_map:
         with open(r, "r") as f:
-            recombs.append(map(float, f.readline().split()))
-        lengths.append(len(recombs)+1)
+            recombs.append(list(map(float, f.readline().split())))
+        lengths.append(len(recombs[-1])+1)
     setups.append(lengths)
 if options.seq!= "simulated":
     seqs=[]
     lengths=[]
     for r in options.seq:
         with open(options.seq, "r") as f:
-            seq=map(int, f.readline().split())
+            seq=list(map(int, f.readline().split()))
             lengths.append(len(seq))
         seqs.append(seq)
     setups.append(lengths)
@@ -123,13 +123,13 @@ likelihood=generate_likelihood_from_data(all_allele_frequencies, recombs, seqs)
 ad=maximize_likelihood_exhaustive(likelihood, pops)
 
 if options.seq=="simulated":
-    res=res+" ".join(map(str,tpops))+" "+ str(likelihood(tpops))+  "\n"
+    res=res+" ".join(list(map(str,tpops)))+" "+ str(likelihood(tpops))+  "\n"
 else:
     res=res+"#"+"\n"
 print(res)
 
 for params,likel in ad:
-    res+=" ".join(map(str,params))+" "+str(likel)+"\n"
+    res+=" ".join(list(map(str,params)))+" "+str(likel)+"\n"
 
 print(res)
 
