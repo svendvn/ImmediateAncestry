@@ -50,7 +50,7 @@ def generate_likelihood_from_generators(transition_generator, emission_generator
         return res
     return likelihood
 
-def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from, print_size):
+def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from):
     combinations=[]
     likelihoods=[]
     counter=0
@@ -72,7 +72,7 @@ def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from, print_size):
                                     likelihoods.append(likelihood(list(itera)))
     sorted_indexes=[i[0] for i in sorted(enumerate(likelihoods), key=lambda x: x[1])]
     res_dict=[]
-    for i in range(min(print_size,len(likelihoods))):#print everything.
+    for i in range(len(likelihoods)):#print everything.
         index=sorted_indexes[-i-1]
         res_dict.append((combinations[index],likelihoods[index]))
     print("Looped over ",counter)
