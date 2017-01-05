@@ -9,7 +9,8 @@ It then searches the spaces of possible ancestries of the great grandparents of 
 
 parser = ArgumentParser(usage=usage)
 
-parser.add_argument("--seq", type=str, nargs="+", default="simulated", help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
+parser.add_argument("--seq_files", type=str, nargs="+", default="simulated", help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
+parser.add_argument("--seq", type=int, default=[0,1], nargs="+", help="This list of numbers indicate which files to combine.")
 parser.add_argument("--alleles", type=str, default="simulated", nargs="+", help="This is a list of files containing the allele frequencies. The first line of each file contains the population name")
 parser.add_argument("--ancestor_files", type=str, default="simulated", nargs="+", help="This is a list of files containing the ancestor alleles. Each file contains the alleles for a list of specimens for a certain segment of DNA \
                                                                                 The file consists of the names of the specimen on the uneven lines and the alleles, space-separated, on the even lines.\
@@ -47,7 +48,7 @@ if options.alleles!="simulated":
             lengths.append(len(freqs))
         all_allele_frequencies.append(allele_frequencies)
         setups.append(lengths)
-if options.ancestor_files!="simulated" and options.seq=="simulated":
+if options.ancestor_files!="simulated" and options.seq_files=="simulated":
     all_ancestors=[]
     for n,r in enumerate(options.ancestor_files):
         haplotypes=[]
@@ -66,7 +67,7 @@ if options.ancestor_files!="simulated" and options.seq=="simulated":
         segment_across_chosen_specimens=[]
         for n in options.ancestors:
             segment_across_chosen_specimens.append(segment_across_specimens[n])
-        chosen_ancestors.append(segment_across_chosen_specimens)            
+        chosen_ancestors.append(segment_across_chosen_specimens) 
 if options.recomb_map != "simulated":
     lengths=[]
     recombs=[]
@@ -75,15 +76,29 @@ if options.recomb_map != "simulated":
             recombs.append(list(map(float, f.readline().split())))
         lengths.append(len(recombs[-1])+1)
     setups.append(lengths)
-if options.seq!= "simulated":
-    seqs=[]
-    lengths=[]
-    for r in options.seq:
-        with open(options.seq, "r") as f:
-            seq=list(map(int, f.readline().split()))
-            lengths.append(len(seq))
-        seqs.append(seq)
-    setups.append(lengths)
+if options.seq_files!= "simulated":
+    assert len(options.seq)<=2, "One or two sequences are needed"
+    all_seqs=[]
+    for n,r in enumerate(options.seq_files):
+        haplotypes=[]
+        lengths=[]
+        with open(r, "r") as f:
+            text=list(f.readlines())
+            for n,(i,j) in enumerate(zip(text[0::2], text[1::2])):
+                name=i.rstrip()
+                hap=list(map(int, j.split()))
+                haplotypes.append(hap)
+            lengths.append(len(hap))
+        all_seqs.append(haplotypes)
+        setups.append(lengths)
+    chosen_seqs=[]
+    for segment_across_specimens in all_seqs:
+        segment_across_chosen_specimens=[]
+        for n in options.seq:
+            segment_across_chosen_specimens.append(segment_across_specimens[n])
+        chosen_seqs.append(segment_across_chosen_specimens)
+    seqs=[[i+j for i,j in zip(chosen_seq[0], chosen_seq[-1])] for chosen_seq in chosen_seqs]
+    
 
 res=""
 print(setups)
@@ -104,7 +119,7 @@ if options.alleles=="simulated":
     all_allele_frequencies= [simulate_allele_frequencies(pops, length) for length in setup]
 if options.recomb_map=="simulated":
     recombs=[simulate_recombs(length,options.recomb_rate, options.skewness) for length in setup]
-if options.seq=="simulated":
+if options.seq_files=="simulated":
     if options.true_pops:
         tpops=options.true_pops
         assert len(tpops)==8, "true population not fully specified"
@@ -114,6 +129,7 @@ if options.seq=="simulated":
         seqs=[simulate(recomb, allele_frequencies=freq, pops=tpops) for freq,recomb in zip(all_allele_frequencies, recombs)]
     else:
         seqs=[simulate(recomb, ancestors=ancestors) for ancestors,recomb in zip(chosen_ancestors, recombs)]
+        
     
 
 #print(recombs)
@@ -122,7 +138,7 @@ if options.seq=="simulated":
 likelihood=generate_likelihood_from_data(all_allele_frequencies, recombs, seqs)
 ad=maximize_likelihood_exhaustive(likelihood, pops)
 
-if options.seq=="simulated":
+if options.seq_files=="simulated":
     res=res+" ".join(list(map(str,tpops)))+" "+ str(likelihood(tpops))+  "\n"
 else:
     res=res+"#"+"\n"
