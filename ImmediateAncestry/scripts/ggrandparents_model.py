@@ -39,6 +39,7 @@ def call_forward():
     
 def generate_likelihood_from_generators(transition_generator, emission_generator_function, initial_probabilities, sequence, char_map):
     def likelihood(params):
+        #return 0 #for testing
         emission_generator=emission_generator_function(params)
         _, Cs= tmhmm.hmm.forward2(sequence, numpy.array(initial_probabilities), transition_generator, emission_generator, char_map, None, None)
         ##FIXME: math domain error

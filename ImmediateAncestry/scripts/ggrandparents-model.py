@@ -23,6 +23,7 @@ parser.add_argument("--SNPs", type=int, default=1000, help="this is the number o
 parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
 parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true immediate ancestors.")
 parser.add_argument('--outfile', type=str, default="immediate_ancestry_results.txt", help="This is the file in which the results are being stored.")
+parser.add_argument('--outfile_from_seqname', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
 parser.add_argument('--skewness', type=float, default=4, help="to be announced")
 parser.add_argument('--recomb_rate', type=float, default=0.1, help="tba")
 
@@ -50,9 +51,11 @@ if options.alleles!="simulated":
         setups.append(lengths)
 if options.ancestor_files!="simulated" and options.seq_files=="simulated":
     all_ancestors=[]
+    all_names=[]
     for n,r in enumerate(options.ancestor_files):
         haplotypes=[]
         lengths=[]
+        names=[]
         with open(r, "r") as f:
             text=list(f.readlines())
             for n,(i,j) in enumerate(zip(text[0::2], text[1::2])):
@@ -79,18 +82,24 @@ if options.recomb_map != "simulated":
 if options.seq_files!= "simulated":
     assert len(options.seq)<=2, "One or two sequences are needed"
     all_seqs=[]
+    print(options.seq_files)
+    print(options.seq)
+    all_names=[]
     for n,r in enumerate(options.seq_files):
         haplotypes=[]
         lengths=[]
+        names=[]
         with open(r, "r") as f:
             text=list(f.readlines())
             for n,(i,j) in enumerate(zip(text[0::2], text[1::2])):
                 name=i.rstrip()
+                names.append(name)
                 hap=list(map(int, j.split()))
                 haplotypes.append(hap)
             lengths.append(len(hap))
         all_seqs.append(haplotypes)
         setups.append(lengths)
+        all_names.append(names)
     chosen_seqs=[]
     for segment_across_specimens in all_seqs:
         segment_across_chosen_specimens=[]
@@ -98,7 +107,15 @@ if options.seq_files!= "simulated":
             segment_across_chosen_specimens.append(segment_across_specimens[n])
         chosen_seqs.append(segment_across_chosen_specimens)
     seqs=[[i+j for i,j in zip(chosen_seq[0], chosen_seq[-1])] for chosen_seq in chosen_seqs]
-    
+
+
+outfile=options.outfile
+if options.outfile_from_seqname:
+    name_without_parent_suffix="_".join(all_names[0][0].split("_")[:-1])
+    if outfile != "immediate_ancestry_results.txt":
+        outfile=name_without_parent_suffix+outfile+".txt"
+    else:
+        outfile=name_without_parent_suffix+".txt"
 
 res=""
 print(setups)
@@ -149,7 +166,7 @@ for params,likel in ad:
 
 print(res)
 
-with open(options.outfile, "w") as f:
+with open(outfile   , "w") as f:
     f.write(res)
 
 
