@@ -10,6 +10,7 @@ def evaluate_list(likelihood, configs, generations, short_to_full):
     
     
 def parse_configs(unparsed_configs, generations, short_to_full):
+    print('parsing', unparsed_configs)
     res=[]
     unfinished_config=[]
     for unparsed_config in unparsed_configs:
@@ -22,6 +23,7 @@ def parse_configs(unparsed_configs, generations, short_to_full):
                         print('didnt read line', l)
                         continue
                     np=pieces[:2**generations]
+                    print(np)
                     res.append([short_to_full[p] for p in np])
         else:
             pieces=unparsed_config.split()

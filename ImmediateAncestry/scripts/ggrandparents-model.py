@@ -5,7 +5,7 @@ from simulate_data import simulate, simulate_recombs, simulate_allele_frequencie
 from recombination import read_recombination_file
 from construct_seqs import get_seqs
 from brute_force_maximization import maximize_likelihood_exhaustive
-from likelihood_evaluations import evaluate_list
+from likelihood_evaluations import evaluate_list, parse_configs
 from shortcut_names import read_shortcuts
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
@@ -38,7 +38,8 @@ parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files
 parser.add_argument('--seq_indices', type=int, default=[0,1], nargs='+', help='the same as seq but here one can put the indices instead of the individualnames')
 parser.add_argument('--ploidy_discrepancy', type=int, default=2, help='If the sequence files contain many different haploid sequences but you want diploid (unphased) data, set this to two and put two sequences in the --seq or --seq_indices option.')
 parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="This is a list of populations to search for the best solution. Defaults to all available population.")
-parser.add_argument('--outfile_from_seqname', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
+parser.add_argument('--auto_outfile_name', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
+parser.add_argument('--auto_outfile_id', type=str, default='0', help='id is an identifier for the output.')
 parser.add_argument('--truncate_af', type=float, default=0.01, help='This will truncate the allele frequencies such that the lowest value is truncate_af and the highest value is 1-truncate_af')
 
 #simulation arguments
@@ -75,10 +76,19 @@ options = parser.parse_args()
 if options.shortcut_names:
     full_to_short,short_to_full=read_shortcuts(options.shortcut_names)
 else:
-    identity={n:n for n in extra_info['pop_names']}
-    full_to_short, short_to_full=identity
-
+    class id_dic(object):
+        def __getitem__(self, key):
+            return key
+    full_to_short, short_to_full=id_dic(), id_dic()
+    
 options.short_to_full=short_to_full
+    
+if options.true_pops:
+    class id_dic(object):
+        def __getitem__(self, key):
+            return key
+    options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
+    print(options.true_pops)
 
 if options.simulate_recombinations:
     pass # here we pass because this means that there is no information about the number of SNPs based on the recombination map recombs=get_recombinations(options.recomb_map, )
@@ -93,6 +103,17 @@ outp = get_seqs(options,  extra_info)
 
 sequences, allele_frequencies, recombination_map= outp
 
+if options.auto_outfile_name:
+    outfiles=[]
+    for true_p in options.true_pops:
+        for j in range(options.sequence_multiplier):
+            filename=''.join(true_p)+'_'+str(j)+'_'+str(options.auto_outfile_id)
+            outfiles.append(filename)
+    options.outfiles=outfiles
+    
+print(options.outfiles)
+print(len(sequences))
+        
 assert len(sequences)==len(options.outfiles)
 
 assert set(full_to_short.keys())==set(extra_info['pop_names'])

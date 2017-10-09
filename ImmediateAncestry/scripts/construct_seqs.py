@@ -10,9 +10,8 @@ def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
     return allele_frequencies
 
 def simulate_ancestors_wrapper(all_allele_frequencies, options, extra_info):
-    l_pops=get_wrapped_pops(options.true_pops, options.ancestor_multiplier, options.generations, extra_info['pop_names'])
     res=[]
-    for pops in l_pops:
+    for pops in options.true_pops:
         tmp=[]
         for allele_frequencies in all_allele_frequencies:
             tmp.append(sim_ancestries(allele_frequencies, [options.short_to_full[pop] for pop in pops]))
@@ -109,8 +108,8 @@ def get_populations(no_pops, population_names, extra_info):
         return res
   
 def get_wrapped_pops(pops, ancestor_multiplier, generations, pop_names):
-    assert len(pops)==ancestor_multiplier*2**generations, 'not enough true ancestors where specified'
-    check_list=list(set(pops))
+    #assert len(pops)==ancestor_multiplier*2**generations, 'not enough true ancestors where specified'
+    #check_list=list(set(pops))
     #assert all(pop in pop_names for pop in check_list), 'discrepancy between the true ancestors and the populations they could be chosen from'
     return [pops[x:x+2**generations] for x in range(0, len(pops), 2**generations)]
 
