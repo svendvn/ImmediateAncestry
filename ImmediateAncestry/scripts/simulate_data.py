@@ -31,7 +31,6 @@ def simulate(recombs, allele_frequencies=None, pops=None, ancestors="simulated")
         assert pops is not None, "populations to simulate from not specified."
         assert allele_frequencies is not None, "allele frequencies to simulate from not specified."
         seqs=sim_ancestries(allele_frequencies, pops)
-    
     else:
         seqs=ancestors
     
