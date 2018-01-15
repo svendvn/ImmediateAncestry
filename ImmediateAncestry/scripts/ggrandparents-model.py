@@ -7,6 +7,8 @@ from construct_seqs import get_seqs
 from brute_force_maximization import maximize_likelihood_exhaustive
 from likelihood_evaluations import evaluate_list, parse_configs
 from shortcut_names import read_shortcuts
+from setup_MCMC import mcmc_search
+from id_dic import id_dic
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
 
@@ -31,7 +33,7 @@ parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dr
                                                                '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/chr13_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies. They are in the format ")
 
 #key arguments
-parser.add_argument('--generations', type=int, default=3, help='the number of generations to go back. 3 is great grandparents.')
+parser.add_argument('--generations', type=int, default=4, help='the number of generations to go back. 3 is great grandparents.')
 
 #technical arguments
 parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this can be used to take out special rows. An empty list defaults to first and second row.")
@@ -53,6 +55,7 @@ parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="T
                                                                                 If set to other than simulated, there will only be an effect if seqs is also simulated.")
 
 parser.add_argument("--SNPs", type=int, default=0, help="this is the number of SNPs to simulate. If any input files are specified this will be ignored")
+parser.add_argument("--mcmc_reps", type=int, default=3, help="this is the length of the markov chain")
 parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
 parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true immediate ancestors. It has to be of length 2**generations*ancestor_multiplier")
 parser.add_argument('--no_pops', type=int, default=4, help='the number of populations.')
@@ -61,15 +64,17 @@ parser.add_argument('--sequence_multiplier', type=int, default=1, help='the numb
 parser.add_argument('--population_names', type=str, nargs='+', default=[], help='When allele frequencies are simulated, the population names can not be read from anywhere, so to avoid default values (a,b,c,d, etc.) it can be specified here.')
 
 parser.add_argument('--type_of_analysis', type=str, choices=['brute-force', 
-                                                             'simulated_annealing', 
+                                                             'mcmc_search', 
                                                              'evaluate_likelihoods'], 
-                    default='evaluate_likelihoods',
+                    default='mcmc_search',
                     help='chooses the type of analysis to run on the data. \
                           brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)) \
                           simulated annealing is not implemented yet. \
                           evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test')
-parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti.txt'], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
+parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
+
+#annealing arguments
 
 options = parser.parse_args()
 
@@ -84,9 +89,6 @@ else:
 options.short_to_full=short_to_full
     
 if options.true_pops:
-    class id_dic(object):
-        def __getitem__(self, key):
-            return key
     options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
     print(options.true_pops)
 
@@ -139,13 +141,17 @@ print('pops', extra_info['pop_names'])
 #print('recombs',recombination_map)
 
 #print(recombs)
-likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations) for seq_system in sequences]
+
+likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
 if options.type_of_analysis=='brute-force':
     ad=[]
     for likelihood in likelihoods:
         ad.append(maximize_likelihood_exhaustive(likelihood, pops, options.generations))
-elif options.type_of_analysis=='simulated_annealing':
-    assert False, 'not implemented'
+elif options.type_of_analysis=='mcmc_search':
+    popn=[full_to_short[n] for n in extra_info['pop_names']]
+    ad=[]
+    for likelihood in likelihoods:
+        ad.append(mcmc_search(likelihood, popn, options.generations, short_to_full, N=options.mcmc_reps))
 elif options.type_of_analysis=='evaluate_likelihoods':
     ad=[]
     for likelihood in likelihoods:
@@ -153,13 +159,15 @@ elif options.type_of_analysis=='evaluate_likelihoods':
 
 res=''
 
-
+print(ad)
 
 for bd,outfile in zip(ad, options.outfiles):
     res=''
     for params,likel in bd:
+        #print(params)
+        #print(likel)
         full_names=list(map(str,params))
-        short_names=[full_to_short[name] for name in full_names]
+        short_names=[full_to_short[name] if len(name)>1 else name for name in full_names]
         res+=" ".join(short_names)+" "+str(likel)+"\n"
     print(res)
     with open(outfile   , "w") as f:

@@ -13,6 +13,8 @@ from math import log
 import operator
 import functools
 
+from id_dic import id_dic
+
 from itertools import product
 
 code_to_index={"A":0, "C":1, "G":2, "T":3}
@@ -41,20 +43,23 @@ code_to_index={"A":0, "C":1, "G":2, "T":3}
     
 class likelihood_class(object):
     
-    def __init__(self, transition_generator, emission_generator_function, initial_probabilities, sequence, char_map):
+    def __init__(self, transition_generator, emission_generator_function, initial_probabilities, sequence, char_map, short_to_full):
         self.transition_generator=transition_generator
         self.emission_generator_function=emission_generator_function
         self.initial_probabilities=initial_probabilities
         self.sequence=sequence
         self.char_map=char_map
+        self.short_to_full=short_to_full
         self.values_dic={}
         
-    def __call__(self, params):
+    def __call__(self, params, pks={}):
+        
         reduced=tuple(find_smallet_equivalence_class(params))
         if reduced in self.values_dic:
             return self.values_dic[reduced]
         else:
-            emission_generator=self.emission_generator_function(params)
+            params2=[self.short_to_full[p] for p in params]
+            emission_generator=self.emission_generator_function(params2)
             _, Cs= tmhmm.hmm.forward2(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
             res=0
             for C in Cs:
@@ -85,7 +90,7 @@ def generate_likelihood_from_generators(transition_generator, emission_generator
 
     
 
-def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, generations=3):
+def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, generations=3, short_to_full=id_dic()):
     list_of_likelihoods=[]
     for alleles, recomb_map, seq in zip(alleles_list, recomb_map_list, seq_list):
         trans_gen=matrix_generation.generate_transition_matrix(recomb_map, generations)
@@ -94,10 +99,10 @@ def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, gener
         initial=[1.0/M]*M
         char_map={'0':0,'1':1,'2':2}
         seq2="".join(map(str,seq))
-        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map))
+        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
         
-    def likelihood(param):
-        return sum([lik(param) for lik in list_of_likelihoods])
+    def likelihood(param,pks={}):
+        return sum([lik(param,pks) for lik in list_of_likelihoods])
     
     return likelihood
     
@@ -175,5 +180,19 @@ if __name__ == '__main__':
     #lik=test_model_likelihood(8)
     #print(maximize_likelihood_exhaustive(lik,["pop1","pop2"]))
     print(find_smallet_equivalence_class(["a","b","a","a","a","b","a","a"]))
+    n=2**3
+    combinations=[]
+    counter=0
+    for itera in product(*([['a','b','c','d']]*n)):
+        print(itera)
+        if find_smallet_equivalence_class(itera) in combinations:
+            print(str(itera), "skipped")
+            continue
+        counter+=1
+        combinations.append(itera)
+        #likelihoods.append(counter)
+        print(itera)
+    print('counter',counter)
+        
     
     

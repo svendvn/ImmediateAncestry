@@ -1,5 +1,3 @@
-from scipy.stats import poisson, norm, multivariate_normal
-from ggrandparents_model import likelihood
 from numpy.random import random
 from math import exp, log
 
@@ -17,6 +15,9 @@ def one_jump(x, post, temperature, posterior_function, proposal, pks={}):
     
     post_new=posterior_function(newx,pks)
     pks['proposed_posterior']=post_new
+    pks['proposed_x']=newx
+    pks['old_x']=x
+    pks['old_posterior']=post
     
     #print temperature
 
@@ -41,9 +42,14 @@ def one_jump(x, post, temperature, posterior_function, proposal, pks={}):
     
     u=random()
     pks['U']=u
-    proposal.adapt(mhr, u, post_new, post, temperature)
+    #proposal.adapt(mhr, u, post_new, post, temperature)
+    
     if u<mhr:
+        pks['posterior']=post_new
+        pks['x']=newx
         return newx,post_new
+    pks['posterior']=post
+    pks['x']=x
     return x,post
 
 
@@ -71,10 +77,6 @@ def basic_chain(start_x, summaries, posterior_function, proposal, post=None, N=1
         if overall_thinning!=0 and i%overall_thinning==0:
             iteration_summary.append(_calc_and_print_summaries(sample_verbose_scheme,
                                                                summaries,
-                                                               new_x,
-                                                               posterior=new_post,
-                                                               old_post=post,
-                                                               old_x=x,
                                                                iteration_number=i,**proposal_knowledge_scraper))
 
             if appending_result_file is not None:

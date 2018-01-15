@@ -1,10 +1,22 @@
 from numpy.random import choice
 from copy import deepcopy
+from proposal import Proposal
 
-def substitution(config):
-    i=choice(len(config))
-    bases=['A','C','G','T']
-    bases.remove(config[i])
-    config2=deepcopy(config)
-    config2[i]=choice(bases,1)
-    return config2,1,1
+class Substitution(Proposal):
+    
+    def __call__(self, config):
+        config=list(config)
+        i=choice(len(config))
+        bases=deepcopy(self.pops)
+        #print('config', config)
+        #print(bases, config[i])
+        bases.remove(config[i])
+        config2=deepcopy(config)
+        #print(choice(bases,1))
+        config2[i]=choice(bases,1)[0]
+        #print(config2)
+        return "".join(config2),1,1
+    
+if __name__=='__main__':
+    s=Substitution(pops=list('evst'))
+    s('evsvvstst')
