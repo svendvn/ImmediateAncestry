@@ -1,6 +1,6 @@
 import numpy
 
-REORDER={0:0,1:1,2:2,4:3,5:4,8:5}
+REORDER={0:0,1:1,3:2}
 
 def transition_matrix(rho, s):
     '''
@@ -45,22 +45,24 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
         pops_mother=params[:m]
         pops_father=params[m:]
         def generator(index_of_sequence):
-            ans=numpy.zeros((M,6))
+            ans=numpy.zeros((M,4))
             for i in range(m):   #the m ancestries of the mother
                 for j in range(m): #the m ancestries of the father
-                    for n1 in range(3): #the two alleles and the missing for one of the phases
-                        for n2 in range(3): #the two alleles for the other phase
-                            i1,i2= i*m+j, n1*3+n2
+                    p1,p2= ancestral_allele_dictionary[pops_mother[i]][index_of_sequence], ancestral_allele_dictionary[pops_father[j]][index_of_sequence]
+                    i1=i*m+j
+                    for n1 in range(2): #the two alleles and the missing for one of the phases
+                        for n2 in range(2): #the two alleles for the other phase
+                            i2=n1*2+n2
                             
                             #jumping over the unnecessary part.
-                            if i2 not in REORDER:
+                            if i2==2:
                                 continue
-                            else:
-                                i2=REORDER[i2]
-                                
-                            p1,p2= ancestral_allele_dictionary[pops_mother[i]][index_of_sequence], ancestral_allele_dictionary[pops_father[j]][index_of_sequence]
-                            prob= 0.5*subst(p1,n1)*subst(p2,n2)+0.5*subst(p1,n2)*subst(p2,n1)
+                            elif i2==3:
+                                i2=2
+
+                            prob= 0.5 * subst(p1,n1) * subst(p2,n2) + 0.5 * subst(p1,n2) * subst(p2,n1)
                             ans[i1,i2]=prob
+                    ans[i1,3]=1
                             
                                 
             return ans

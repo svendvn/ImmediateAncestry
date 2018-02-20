@@ -1,4 +1,5 @@
 from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate
+from numpy.random import choice
 
 def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
     if 'setups' not in extra_info:
@@ -49,17 +50,68 @@ def package_the_deal_wrapper(statistic, options, extra_info):
         _=read_allele_frequencies(options.allele_frequencies, options.truncate_af, extra_info)
     return (statistic, extra_info['allele_frequencies'], extra_info['recombs'])
 
+def get_indices_of_pops(chosen_pops, all_names, short_to_full):
+    res=[]
+    for chosen_pop in chosen_pops:
+        tmp=[]
+        for index,name in enumerate(all_names):
+            if name.startswith(short_to_full[chosen_pop]):
+                tmp.append(index)
+        res.append(tmp)
+    return res
+
+def randomize_inds(list_of_lists):
+    res=[]
+    for indices in list_of_lists:
+        res.append(choice(indices))
+    return res
+
+def choose_ancestors_wrapper(ancestors, options, extra_info):
+    '''
+    This should either
+    a) extract fully specified ancestors in the options.ancestors or options.ancestor_indices.This is chosen if the length of those lists 
+    matches what it should and a warning is sent out if ##NOT IMPLEMENTED!
+    b) simulate random ancestors from the shortcut names object called options.short_to_full
+    and the true populations called true_pops.
+    '''
+    if options.ancestors or options.ancestor_indices:
+        assert False, 'Not implemented case sought after'
+    all_chosen_ancestors=[]
+    #print('short_to_full', options.short_to_full)
+    
+    for true_pop_config in options.true_pops:
+        chosen_ancestors=[]
+        #print('true_pop_config', true_pop_config)
+        inds= get_indices_of_pops(true_pop_config, extra_info['names'], options.short_to_full)
+        randomized_inds=randomize_inds(inds)
+        #print('rinds', randomized_inds)
+        for ancestor_pieces in ancestors:
+            chosen_ancestors_one_piece=[]
+            for ind in randomized_inds:
+                chosen_ancestors_one_piece.append(ancestor_pieces[ind])
+            chosen_ancestors.append(chosen_ancestors_one_piece)
+        all_chosen_ancestors.append(chosen_ancestors)
+    #print(all_chosen_ancestors)
+    return all_chosen_ancestors
+            
+            
+        
+    
+    assert False, 'stopped implementing'
+
 transitions={
              (1,3): simulate_allele_frequencies_wrapper,
              #(2,3): calculate_allele_frequencies_wrapper,
              (3,4): simulate_ancestors_wrapper,
-             #(2,4): choose_ancestors_wrapper,
+             (2,4): choose_ancestors_wrapper,
              (4,5): load_recombinations_wrapper,
              (5,6): simulate_generations_wrapper,
              #(3,6): simualte_mixed_individual_wrapper,
              #(2,6): choose_seqs_wrapper
              (6,7): package_the_deal_wrapper
              }
+
+
 
 def get_seqs(options, extra_info={}):
     pipeline=options.sequences_pipeline
@@ -243,6 +295,8 @@ def read_ancestor_files(files, extra_info):
     else:
         extra_info['setups']=setups
     assert all(names==all_names[0] for names in all_names), 'some ancestor files did not have identical ancestors.'
-    extra_info['names']=all_names
+    #print('all_names',all_names[0])
+    #print('files', files)
+    extra_info['names']=all_names[0]
     return all_ancestors
     

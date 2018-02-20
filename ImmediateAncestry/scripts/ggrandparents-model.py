@@ -18,7 +18,6 @@ The data pipeline is used for testing purposes because the program contains ways
 1: no data at all, allele frequencies are simulated. It requires that you set the number of populations.
 2: allele files of the ancestors are specified. 
 3. The ancestors are simulated from the true_pops. It is possible to have more than one 
-
 """
 
 parser = ArgumentParser(usage=usage)
@@ -49,7 +48,8 @@ parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], 
 parser.add_argument('--simulate_recombinations', default=False, action='store_true', help='this will simulate the recombination rate between SNPs. The upper rate is controlled by the argument recomb_rate')
 parser.add_argument('--recomb_rate', type=float, default=0.1, help="The average recombination rate when simulated.")
 parser.add_argument('--skewness', type=float, default=4, help="The skewness of the simulated recombination rates. If set to 0, there will be a constant recombination rate. Values below -1 are not meaningful")
-parser.add_argument("--ancestors", type=int, default=[0,1,2,3,4,5,6,7], nargs="+", help="This list of numbers are the indices of the ancestors in the ancestor files which are chosen as ancestors.")
+parser.add_argument('--ancestors', type=str, default=[], nargs='+', help="This is the names of the ancestors in the ancestor files which are chosen as ancestors.")
+parser.add_argument("--ancestor_indices", type=int, default=[], nargs="+", help="This list of numbers are the indices of the ancestors in the ancestor files which are chosen as ancestors.")
 parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="This is a list of files containing the ancestor alleles. Each file contains the alleles for a list of specimens for a certain segment of DNA \
                                                                                 The file consists of the names of the specimen on the uneven lines and the alleles, space-separated, on the even lines.\
                                                                                 If set to other than simulated, there will only be an effect if seqs is also simulated.")
