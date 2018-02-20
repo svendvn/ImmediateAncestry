@@ -37,8 +37,8 @@ parser.add_argument('--generations', type=int, default=4, help='the number of ge
 
 #technical arguments
 parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this can be used to take out special rows. An empty list defaults to first and second row.")
-parser.add_argument('--seq_indices', type=int, default=[0,1], nargs='+', help='the same as seq but here one can put the indices instead of the individualnames')
-parser.add_argument('--ploidy_discrepancy', type=int, default=2, help='If the sequence files contain many different haploid sequences but you want diploid (unphased) data, set this to two and put two sequences in the --seq or --seq_indices option.')
+parser.add_argument('--seq_indices', type=int, default=[0], nargs='+', help='the same as seq but here one can put the indices instead of the individualnames')
+parser.add_argument('--ploidy_discrepancy', type=int, default=1, help='If the sequence files contain many different haploid sequences but you want diploid (unphased) data, set this to two and put two sequences in the --seq or --seq_indices option.')
 parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="This is a list of populations to search for the best solution. Defaults to all available population.")
 parser.add_argument('--auto_outfile_name', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
 parser.add_argument('--auto_outfile_id', type=str, default='0', help='id is an identifier for the output.')
@@ -113,12 +113,12 @@ if options.auto_outfile_name:
             outfiles.append(filename)
     options.outfiles=outfiles
     
-print(options.outfiles)
-print(len(sequences))
-        
-assert len(sequences)==len(options.outfiles)
-
-assert set(full_to_short.keys())==set(extra_info['pop_names'])
+    print(options.outfiles)
+    print(len(sequences))
+            
+    assert len(sequences)==len(options.outfiles)
+    
+    assert set(full_to_short.keys())==set(extra_info['pop_names'])
 
 
 
@@ -141,7 +141,7 @@ print('pops', extra_info['pop_names'])
 #print('recombs',recombination_map)
 
 #print(recombs)
-
+print(sequences)
 likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
 if options.type_of_analysis=='brute-force':
     ad=[]

@@ -97,7 +97,7 @@ def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, gener
         ems_gen=matrix_generation.generate_emission_matrix(alleles, generations)
         M=(2**(generations-1))**2
         initial=[1.0/M]*M
-        char_map={'0':0,'1':1,'2':2}
+        char_map={str(i):i for i in range(6)}
         seq2="".join(map(str,seq))
         list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
         

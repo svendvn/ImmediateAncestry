@@ -199,6 +199,8 @@ def read_sequences(files, which_to_choose, extra_info):
                     segment_within_sample.append(segment_across_specimens[names_to_indices[r]])
             if len(segment_within_sample)>1:
                 segment_within_sample=[i+j for i,j in zip(segment_within_sample[0],segment_within_sample[1])]
+            else:
+                segment_within_sample=segment_within_sample[0]
             segment_across_samples.append(segment_within_sample)
         chosen_seqs.append(segment_across_samples)
 #     print('chosen_seqs',chosen_seqs)

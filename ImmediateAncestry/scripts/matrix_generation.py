@@ -1,5 +1,6 @@
 import numpy
 
+REORDER={0:0,1:1,2:2,4:3,5:4,8:5}
 
 def transition_matrix(rho, s):
     '''
@@ -35,6 +36,8 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
     def subst(p,n):
         if n==1:
             return p
+        elif n==2:
+            return 0.5
         return 1.0-p
     m=2**(s-1)
     M=m**2
@@ -42,25 +45,22 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
         pops_mother=params[:m]
         pops_father=params[m:]
         def generator(index_of_sequence):
-            ans=numpy.zeros((M,3))
+            ans=numpy.zeros((M,6))
             for i in range(m):   #the m ancestries of the mother
                 for j in range(m): #the m ancestries of the father
-                    for n1 in range(2): #the two alleles for one of the phases
-                        for n2 in range(2): #the two alleles for the other phase
-                            i1,i2= i*m+j, n1*2+n2
+                    for n1 in range(3): #the two alleles and the missing for one of the phases
+                        for n2 in range(3): #the two alleles for the other phase
+                            i1,i2= i*m+j, n1*3+n2
                             
                             #jumping over the unnecessary part.
-                            if i2==2:
+                            if i2 not in REORDER:
                                 continue
-                            if i2==3:
-                                i2=2
+                            else:
+                                i2=REORDER[i2]
                                 
                             p1,p2= ancestral_allele_dictionary[pops_mother[i]][index_of_sequence], ancestral_allele_dictionary[pops_father[j]][index_of_sequence]
-                            prob=0.5*subst(p1,n1)*subst(p2,n2)+0.5*subst(p1,n2)*subst(p2,n1)
-                            if i2==1:
-                                ans[i1,i2]=prob*2
-                            else:
-                                ans[i1,i2]=prob
+                            prob= 0.5*subst(p1,n1)*subst(p2,n2)+0.5*subst(p1,n2)*subst(p2,n1)
+                            ans[i1,i2]=prob
                             
                                 
             return ans
