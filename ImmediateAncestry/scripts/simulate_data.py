@@ -20,7 +20,15 @@ def simulate_allele_frequencies(set_of_populations, length):
 def simulate_recombs(length,avg_recomb_rate, skewness=4):
     max_recomb_rate=(skewness+1)*avg_recomb_rate
     return [(numpy.random.random())**skewness*max_recomb_rate for _ in range(length)]
-        
+
+def zero_one_ize(seq):
+    def convert(a):
+        if a==0:
+            return 0
+        if a==2:
+            return 1
+        return numpy.random.randint(2)
+    return list(map(convert, seq))
 
 def simulate(recombs, allele_frequencies=None, pops=None, ancestors="simulated"):
     """
@@ -89,5 +97,6 @@ if __name__=="__main__":
     pops=["pop1","pop1","pop1","pop1","pop2","pop2","pop2","pop2"]
     recombs=[0.01,0.01,0.01,0.99,0.01,0.01]
     #simulate(allele_fs, res_file, pops, recombs)
-    write_down(res_file,simulate_all(10000, pops))
+    print(zero_one_ize([0,0,2,2,2,1,1,1,3,3,3,'trt']))
+    #write_down(res_file,simulate_all(10000, pops))
     

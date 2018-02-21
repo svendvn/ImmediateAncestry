@@ -1,4 +1,4 @@
-from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate
+from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate, zero_one_ize
 from numpy.random import choice
 
 def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
@@ -88,7 +88,7 @@ def choose_ancestors_wrapper(ancestors, options, extra_info):
         for ancestor_pieces in ancestors:
             chosen_ancestors_one_piece=[]
             for ind in randomized_inds:
-                chosen_ancestors_one_piece.append(ancestor_pieces[ind])
+                chosen_ancestors_one_piece.append(zero_one_ize(ancestor_pieces[ind]))
             chosen_ancestors.append(chosen_ancestors_one_piece)
         all_chosen_ancestors.append(chosen_ancestors)
     #print(all_chosen_ancestors)
