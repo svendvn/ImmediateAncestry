@@ -9,6 +9,7 @@ from likelihood_evaluations import evaluate_list, parse_configs
 from shortcut_names import read_shortcuts
 from setup_MCMC import mcmc_search
 from id_dic import id_dic
+from mock_likelihood import mock_likelihood
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
 
@@ -23,13 +24,13 @@ The data pipeline is used for testing purposes because the program contains ways
 parser = ArgumentParser(usage=usage)
 
 #input/output arguments
-parser.add_argument("--seq_files", type=str, nargs="+", default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/seq12.txt',
-                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/seq13.txt'], help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
-parser.add_argument("--recomb_map", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/rho_12.txt',
-                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/rho_13.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. It is a tab separated line of numbers.")
+parser.add_argument("--seq_files", type=str, nargs="+", default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq21.txt',
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq22.txt'], help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
+parser.add_argument("--recomb_map", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr21.txt',
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr22.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. It is a tab separated line of numbers.")
 parser.add_argument('--outfiles', type=str, nargs='+', default=["immediate_ancestry_results.txt"], help="This is the file in which the results are being stored.")
-parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/chr12_freqs.txt',
-                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/prepared_data/chr13_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies. They are in the format ")
+parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr21_freqs.txt',
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies. They are in the format ")
 
 #key arguments
 parser.add_argument('--generations', type=int, default=4, help='the number of generations to go back. 3 is great grandparents.')
@@ -42,6 +43,7 @@ parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="Th
 parser.add_argument('--auto_outfile_name', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
 parser.add_argument('--auto_outfile_id', type=str, default='0', help='id is an identifier for the output.')
 parser.add_argument('--truncate_af', type=float, default=0.01, help='This will truncate the allele frequencies such that the lowest value is truncate_af and the highest value is 1-truncate_af')
+parser.add_argument('--mock_likelihood', action='store_true', default=False, help='this will replace the costly likelihood with a likelihood that is just minus the hamming distance.')
 
 #simulation arguments
 parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is how to make the sequences to run the analysis on.')
@@ -55,7 +57,7 @@ parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="T
                                                                                 If set to other than simulated, there will only be an effect if seqs is also simulated.")
 
 parser.add_argument("--SNPs", type=int, default=0, help="this is the number of SNPs to simulate. If any input files are specified this will be ignored")
-parser.add_argument("--mcmc_reps", type=int, default=3, help="this is the length of the markov chain")
+parser.add_argument("--mcmc_reps", type=int, default=300, help="this is the length of the markov chain")
 parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
 parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true immediate ancestors. It has to be of length 2**generations*ancestor_multiplier")
 parser.add_argument('--no_pops', type=int, default=4, help='the number of populations.')
@@ -72,7 +74,7 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
                           simulated annealing is not implemented yet. \
                           evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test')
 parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
-parser.add_argument('--shortcut_names', type=str, default='shortcut_names.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
+parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 
 #annealing arguments
 
@@ -143,6 +145,8 @@ print('pops', extra_info['pop_names'])
 #print(recombs)
 print(sequences)
 likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
+if options.mock_likelihood:
+    likelihoods=[mock_likelihood for _ in likelihoods]
 if options.type_of_analysis=='brute-force':
     ad=[]
     for likelihood in likelihoods:
