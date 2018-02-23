@@ -71,7 +71,7 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
                           brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)) \
                           simulated annealing is not implemented yet. \
                           evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test')
-parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
+parser.add_argument('--configs_to_test', type=str, nargs='+', default=[], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 
 #annealing arguments
@@ -91,6 +91,8 @@ options.short_to_full=short_to_full
 if options.true_pops:
     options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
     print(options.true_pops)
+    if not options.configs_to_test:
+        options.configs_to_test=options.true_pops
 
 if options.simulate_recombinations:
     pass # here we pass because this means that there is no information about the number of SNPs based on the recombination map recombs=get_recombinations(options.recomb_map, )
@@ -152,6 +154,9 @@ elif options.type_of_analysis=='mcmc_search':
     ad=[]
     for likelihood in likelihoods:
         ad.append(mcmc_search(likelihood, popn, options.generations, short_to_full, N=options.mcmc_reps))
+    if options.true_pops:
+        for likelihood in likelihoods:
+            ad.append(evaluate_list(likelihood, options.configs_to_test, options.generations, short_to_full))
 elif options.type_of_analysis=='evaluate_likelihoods':
     ad=[]
     for likelihood in likelihoods:
