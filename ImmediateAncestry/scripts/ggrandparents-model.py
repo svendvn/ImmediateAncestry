@@ -92,7 +92,7 @@ if options.true_pops:
     options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
     print(options.true_pops)
     if not options.configs_to_test:
-        options.configs_to_test=options.true_pops
+        options.configs_to_test=' '.join([a for b in options.true_pops for a in b])
 
 if options.simulate_recombinations:
     pass # here we pass because this means that there is no information about the number of SNPs based on the recombination map recombs=get_recombinations(options.recomb_map, )
