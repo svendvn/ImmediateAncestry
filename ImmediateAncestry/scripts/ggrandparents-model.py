@@ -158,11 +158,11 @@ elif options.type_of_analysis=='mcmc_search':
         ad.append(mcmc_search(likelihood, popn, options.generations, short_to_full, N=options.mcmc_reps))
     if options.true_pops:
         for likelihood in likelihoods:
-            ad.append(evaluate_list(likelihood, options.configs_to_test, options.generations, short_to_full))
+            ad.append(evaluate_list(likelihood, options.configs_to_test, options.generations, id_dic()))
 elif options.type_of_analysis=='evaluate_likelihoods':
     ad=[]
     for likelihood in likelihoods:
-        ad.append(evaluate_list(likelihood, options.configs_to_test, options.generations, short_to_full))
+        ad.append(evaluate_list(likelihood, options.configs_to_test, options.generations, id_dic()))
 
 res=''
 
