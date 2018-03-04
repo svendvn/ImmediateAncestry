@@ -23,6 +23,8 @@ def mcmc_search(likelihood, pops, generations, short_to_full, init=None, N=1000)
     #we know that the first column is iteration number, the second posterior, and the last is the configuration x.
     posteriors=res[1]
     xs=res[2]
+    as_dic={x:post for x,post in zip(xs,posteriors)}
+    xs, posteriors= map(list, zip(*as_dic.items()))
     list_sorted=sorted(enumerate(posteriors), key=lambda elem: elem[1])
     i=list_sorted[-1][0]
     #print(xs[i], posteriors[i])
@@ -34,6 +36,8 @@ def mcmc_search(likelihood, pops, generations, short_to_full, init=None, N=1000)
         p_to_return.append(posteriors[i])
 
     return list(zip(x_to_return, p_to_return))
+
+
     
     
     
