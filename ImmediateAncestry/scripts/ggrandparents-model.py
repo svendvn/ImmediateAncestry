@@ -33,7 +33,7 @@ parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dr
                                                                '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies. They are in the format ")
 
 #key arguments
-parser.add_argument('--generations', type=int, default=4, help='the number of generations to go back. 3 is great grandparents.')
+parser.add_argument('--generations', type=int, default=2, help='the number of generations to go back. 3 is great grandparents.')
 
 #technical arguments
 parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this can be used to take out special rows. An empty list defaults to first and second row.")
@@ -68,7 +68,7 @@ parser.add_argument('--population_names', type=str, nargs='+', default=[], help=
 parser.add_argument('--type_of_analysis', type=str, choices=['brute-force', 
                                                              'mcmc_search', 
                                                              'evaluate_likelihoods'], 
-                    default='mcmc_search',
+                    default='brute-force',
                     help='chooses the type of analysis to run on the data. \
                           brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)) \
                           simulated annealing is not implemented yet. \
@@ -136,6 +136,10 @@ if options.auto_outfile_name:
 
 
     
+#for e,v in extra_info.items():
+#    print(e,v)
+    
+#print(short_to_full)
 
 #    print('seqs',sequences)
 print('pops', extra_info['pop_names'])
@@ -143,14 +147,20 @@ print('pops', extra_info['pop_names'])
 #print('recombs',recombination_map)
 
 #print(recombs)
-print(sequences)
+#print(sequences)
+#print(recombs)
+# recombs_tmp=[]
+# for recs in recombs:
+#     recombs_tmp.append([0.1 for _ in recs])
+# recombs=recombs_tmp
 likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
 if options.mock_likelihood:
     likelihoods=[mock_likelihood for _ in likelihoods]
 if options.type_of_analysis=='brute-force':
+    popn=[full_to_short[n] for n in extra_info['pop_names']]
     ad=[]
     for likelihood in likelihoods:
-        ad.append(maximize_likelihood_exhaustive(likelihood, pops, options.generations))
+        ad.append(maximize_likelihood_exhaustive(likelihood,  popn, options.generations))
 elif options.type_of_analysis=='mcmc_search':
     popn=[full_to_short[n] for n in extra_info['pop_names']]
     ad=[]
