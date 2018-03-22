@@ -78,13 +78,13 @@ def sim_next_gen(seqs, recombs):
     return res
     
 def sim_ancestries(allele_frequencies, pops):
-    res=[]
+    this_segment=[]
     for pop in pops:
         add=[]
         for prob in allele_frequencies[pop]:
             add.append(int(numpy.random.random()<prob))
-        res.append(add)
-    return res
+        this_segment.append(add)
+    return this_segment
     
 def write_down(file_name, seq):
     with open(file_name, "w") as f:

@@ -62,6 +62,7 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
 
                             prob= 0.5 * subst(p1,n1) * subst(p2,n2) + 0.5 * subst(p1,n2) * subst(p2,n1)
                             ans[i1,i2]=prob
+                    ans[i1,1]*=2
                     ans[i1,3]=1
                             
                                 
@@ -76,7 +77,7 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
 
 
 if __name__=="__main__":
-    alleles={"pop1":[0.1,0.1,0.1], "pop2":[0.9,0.9,0.9]}
+    alleles={"pop1":[0.2,0.1,0.1], "pop2":[0.9,0.9,0.9]}
     popsm=["pop1","pop2","pop1","pop1"]
     popsf=["pop2","pop2","pop1","pop2"]
     mu=0.01
