@@ -1,17 +1,27 @@
 from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate, zero_one_ize
 from numpy.random import choice
 
+
 def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
     if 'setups' not in extra_info:
         extra_info['setups']=[options.SNPs]*options.reps
-    allele_frequencies={} #about to be filled with dictionaries
+    allele_frequencies=[] #about to be filled with dictionaries
     for length in extra_info['setups']: 
-        allele_frequencies.append(simulate_allele_frequencies(statistic, length))
+        this_segment_allele_frequencies=simulate_allele_frequencies(statistic, length)
+        allele_frequencies.append(this_segment_allele_frequencies)
     extra_info['allele_frequencies']=allele_frequencies
     return allele_frequencies
 
 def simulate_ancestors_wrapper(all_allele_frequencies, options, extra_info):
     res=[]
+    if options.true_pops is None:
+        r=[]
+        for _ in  range(2**options.generations):
+            print(extra_info['pop_names'])
+            i=choice(len(extra_info['pop_names']),1)
+            a=extra_info['pop_names'][i]
+            r.append(a)
+        options.true_pops=[r]
     for pops in options.true_pops:
         tmp=[]
         for allele_frequencies in all_allele_frequencies:
@@ -44,6 +54,8 @@ def simulate_generations_wrapper(all_ancestors_and_all_recombs, options, extra_i
             true_vals.append(ancestor_tuple)
     extra_info['true_vals']=true_vals
     return res
+
+
 
 def package_the_deal_wrapper(statistic, options, extra_info):
     if 'allele_frequencies' not in extra_info:
@@ -125,6 +137,32 @@ def get_seqs(options, extra_info={}):
         statistic= transitions[trans](statistic, options, extra_info)
         previous_stage=stage
     return statistic
+
+
+def save_seqs(seqs, filenames='', seq_names=None):
+    '''
+    This gets a bit convoluted, because seqs is a list of different individuals.
+    Each individual is itself a list of segments
+    A segment is a list of basepairs.
+    
+    The output on the other hand is a different file for each segment
+    Each file has a name-line and a sequence-line for each individual
+    
+    So the two formats are nested differently. The output format is saved in output_seqs
+    '''
+    
+    try:
+        basestring
+    except NameError:
+        basestring = str
+    
+    output_seqs=map(list, zip(*seqs))
+    
+    if isinstance(filenames, basestring):
+        filenames=[filename+str(i+1) for i,filename in enumerate()]
+    
+    for filename,segment in zip(filenames,output_seqs):
+        pass
         
         
     
@@ -299,4 +337,30 @@ def read_ancestor_files(files, extra_info):
     #print('files', files)
     extra_info['names']=all_names[0]
     return all_ancestors
+
+if __name__=='__main__':
+    from id_dic import id_dic
+    class Object(object):
+        pass
+
+    options=Object()
+    options.sequences_pipeline=[1,3,4,5,6]
+    
+    options.true_pops=None
+    options.no_pops=4
+    options.population_names=[]
+    options.SNPs=37
+    options.reps=5
+    options.generations=3
+    options.short_to_full=id_dic()
+    options.simulate_recombination=True
+    options.recomb_rate=0.1
+    options.skewness=1
+    options.sequence_multiplier=1
+    ei={}
+    
+    a=get_seqs(options,ei)
+    print(a)
+    
+    print(get_wrapped_seqs(seq=[], seq_indices=[0,1], ploidy_discrepancy=1))
     
