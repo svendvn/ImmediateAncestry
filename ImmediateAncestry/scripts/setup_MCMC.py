@@ -3,6 +3,7 @@ from summary import basic_summary
 from meta_proposal import MetaProposal
 from MCMC import basic_chain
 from _operator import itemgetter
+from ggrandparents_model import find_smallet_equivalence_class
 
 def mcmc_search(likelihood, pops, generations, short_to_full, init=None, N=1000):
     if init is None:
@@ -21,8 +22,8 @@ def mcmc_search(likelihood, pops, generations, short_to_full, init=None, N=1000)
     res=list(s)
     #print(res)
     #we know that the first column is iteration number, the second posterior, and the last is the configuration x.
-    posteriors=res[1]
-    xs=res[2]
+    res_dic={find_smallet_equivalence_class(x):p for x,p in zip(res[2],res[1])}
+    xs, posteriors= map(list,list(zip(*list(res_dic.items()))))
     list_sorted=sorted(enumerate(posteriors), key=lambda elem: elem[1])
     i=list_sorted[-1][0]
     #print(xs[i], posteriors[i])
