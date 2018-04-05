@@ -15,51 +15,46 @@ usage="""This program generates a likelihood given the inputs: sequence, allele 
 
 It then searches the spaces of possible ancestries of the great grandparents of the input sequence.
 
-The data pipeline is used for testing purposes because the program contains ways to simulate data according to the model. There are basically four types of data to use:
-1: no data at all, allele frequencies are simulated. It requires that you set the number of populations.
-2: allele files of the ancestors are specified. 
-3. The ancestors are simulated from the true_pops. It is possible to have more than one 
+The data pipeline is used for testing purposes because the program contains ways to simulate data according to the model. The default pipeline [6,7] will run the program as expected from the README.md.
 """
 
 parser = ArgumentParser(usage=usage)
 
 #input/output arguments
 parser.add_argument("--seq_files", type=str, nargs="+", default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq21.txt',
-                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq22.txt'], help="This is the string of a file of 0, 1 and 2s where 0 corresponds to two major allele, 1 corresponds to one of each and 2 is two minor alleles.")
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq22.txt'], help="This is a list of files. Each file correspond to a different chromosome. The files should contain space separated lines of allele types. 0,1,2 means that there are 0,1 or 2 copies of the allele. 3 is missing data.")
 parser.add_argument("--recomb_map", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr21.txt',
-                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr22.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. It is a tab separated line of numbers.")
-parser.add_argument('--outfiles', type=str, nargs='+', default=["immediate_ancestry_results.txt"], help="This is the file in which the results are being stored.")
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr22.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. Each file correspond to one chromosome and contains a single space-separated line of N-1 genetic distances, where N is the number of SNPs. The genetic distance is measured in probability of recombination in one generation between the two SNPs.")
+parser.add_argument('--outfiles', type=str, nargs='+', default=["immediate_ancestry_results.txt"], help="These are the files where the output will be written.")
 parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr21_freqs.txt',
-                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies. They are in the format ")
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies in the known populations. Each file correspond to a chromosome and they contain space_separated lines of the allele frequencies of length N genes.")
 
-#key arguments
-parser.add_argument('--generations', type=int, default=2, help='the number of generations to go back. 3 is great grandparents.')
+#model arguments
+parser.add_argument('--generations', type=int, default=2, help='The number of generations to go back. The number of ancestors to estimate will be 2 to the power of this number.')
 
 #technical arguments
-parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this can be used to take out special rows. An empty list defaults to first and second row.")
-parser.add_argument('--seq_indices', type=int, default=[0], nargs='+', help='the same as seq but here one can put the indices instead of the individualnames')
-parser.add_argument('--ploidy_discrepancy', type=int, default=1, help='If the sequence files contain many different haploid sequences but you want diploid (unphased) data, set this to two and put two sequences in the --seq or --seq_indices option.')
-parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="This is a list of populations to search for the best solution. Defaults to all available population.")
+parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this list specifies which individual(s) to include in the analysis")
+parser.add_argument('--seq_indices', type=int, default=[0], nargs='+', help='the same as seq but here using indices instead of names.')
+parser.add_argument('--ploidy_discrepancy', type=int, default=1, help='The seq_files are assumed to be diploid, but if they are haploid (and have no missing data) this can be set to 2, such that the program will combine the two specified haploid sequences into a diploid sequence.')
+parser.add_argument("--pops_to_search", type=str, nargs="+",default=[], help="DEPRECATED. This is a list of populations to search for the best solution. Defaults to all available population.")
 parser.add_argument('--auto_outfile_name', action='store_true', default=False, help="This will construct a filename from the names within the seq files and append the outfile-string and then '.txt'.")
-parser.add_argument('--auto_outfile_id', type=str, default='0', help='id is an identifier for the output.')
+parser.add_argument('--auto_outfile_id', type=str, default='0', help='id is an identifier for the output file.')
 parser.add_argument('--truncate_af', type=float, default=0.01, help='This will truncate the allele frequencies such that the lowest value is truncate_af and the highest value is 1-truncate_af')
-parser.add_argument('--mock_likelihood', action='store_true', default=False, help='this will replace the costly likelihood with a likelihood that is just minus the hamming distance.')
+parser.add_argument('--mock_likelihood', action='store_true', default=False, help='For testing. this will replace the costly likelihood with a likelihood that is just minus the hamming distance.')
 
 #simulation arguments
-parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is how to make the sequences to run the analysis on.')
-parser.add_argument('--simulate_recombinations', default=False, action='store_true', help='this will simulate the recombination rate between SNPs. The upper rate is controlled by the argument recomb_rate')
-parser.add_argument('--recomb_rate', type=float, default=0.1, help="The average recombination rate when simulated.")
+parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is the list of data processing steps to go through. 1 is from scratch, no inputs. 2 is deprecated. 3 is only allele frequencies. 4 is allele frequencies and ancestral sequences. 5 is allele frequencies, ancestral sequences and recombination. 6 is allelfreqs, recombs and sequences. 7 is the same as 6 but packed nicely together.')
+parser.add_argument('--simulate_recombinations', default=False, action='store_true', help='If one doesnt provide a recombination map, the program will throw an error unless this is flag is turned on')
+parser.add_argument('--recomb_rate', type=float, default=0.1, help="If recombination rate is simulated, this is the average recombination probability.")
 parser.add_argument('--skewness', type=float, default=4, help="The skewness of the simulated recombination rates. If set to 0, there will be a constant recombination rate. Values below -1 are not meaningful")
-parser.add_argument('--ancestors', type=str, default=[], nargs='+', help="This is the names of the ancestors in the ancestor files which are chosen as ancestors.")
+parser.add_argument('--ancestors', type=str, default=[], nargs='+', help="This is the names of the ancestors in the ancestor files which are chosen as ancestors if the sequences are simulated from non-simulated ancestors.")
 parser.add_argument("--ancestor_indices", type=int, default=[], nargs="+", help="This list of numbers are the indices of the ancestors in the ancestor files which are chosen as ancestors.")
-parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="This is a list of files containing the ancestor alleles. Each file contains the alleles for a list of specimens for a certain segment of DNA \
-                                                                                The file consists of the names of the specimen on the uneven lines and the alleles, space-separated, on the even lines.\
-                                                                                If set to other than simulated, there will only be an effect if seqs is also simulated.")
+parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="This is a list of files containing the ancestor alleles. The setup is the same as the seq_files. It should only be applied if sequences should be simulated.")
 
-parser.add_argument("--SNPs", type=int, default=0, help="this is the number of SNPs to simulate. If any input files are specified this will be ignored")
-parser.add_argument("--mcmc_reps", type=int, default=300, help="this is the length of the markov chain")
+parser.add_argument("--SNPs", type=int, default=0, help="this is the number of SNPs to simulate per segment. If any input files are specified this will be ignored(because then the number of SNPs will match the number of SNPs in the input files).")
+parser.add_argument("--mcmc_reps", type=int, default=300, help="this is the number of runs of the MCMC (if used).")
 parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
-parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true immediate ancestors. It has to be of length 2**generations*ancestor_multiplier")
+parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true ancestors. It has to be of length 2**generations*ancestor_multiplier")
 parser.add_argument('--no_pops', type=int, default=4, help='the number of populations.')
 parser.add_argument('--ancestor_multiplier', type=int, default=1, help='the number of sets of ancestors are simulated. If more than one, the analysis will also be run more than once.')
 parser.add_argument('--sequence_multiplier', type=int, default=1, help='the number of sequences that should be simulated from each set of ancestors.')
@@ -68,12 +63,12 @@ parser.add_argument('--population_names', type=str, nargs='+', default=[], help=
 parser.add_argument('--type_of_analysis', type=str, choices=['brute-force', 
                                                              'mcmc_search', 
                                                              'evaluate_likelihoods'], 
-                    default='brute-force',
+                    default='mcmc_search',
                     help='chooses the type of analysis to run on the data. \
-                          brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)) \
-                          simulated annealing is not implemented yet. \
-                          evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test')
-parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='if type of analysis is specified. If a string contains a dot, it will be read as filename')
+                          brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)). It is strongly adviced not to use this setting for generations>=4. \
+                          evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test \
+                          mcmc_search is a false MCMC, that finds the maximum likelihood.')
+parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='If type_of_analysis is evaluate_likelihoods this is a file(which has to contain a dot) of all the likelihoods to evaluate. It has to be space separated and a configuration on each line.')
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 
 #annealing arguments
@@ -154,6 +149,7 @@ print('pops', extra_info['pop_names'])
 #     recombs_tmp.append([0.1 for _ in recs])
 # recombs=recombs_tmp
 likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
+print('likelihoods', likelihoods)
 if options.mock_likelihood:
     likelihoods=[mock_likelihood for _ in likelihoods]
 if options.type_of_analysis=='brute-force':

@@ -6,6 +6,9 @@ from _operator import itemgetter
 from ggrandparents_model import find_smallet_equivalence_class
 
 def mcmc_search(likelihood, pops, generations, short_to_full, init=None, N=1000):
+    '''
+    This function wraps the MCMC call, and takes the MCMC output and finds the maximum posterior value.
+    '''
     if init is None:
         init=choice(pops,2**generations)
         
