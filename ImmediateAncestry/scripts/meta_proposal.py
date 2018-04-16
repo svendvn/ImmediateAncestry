@@ -16,7 +16,7 @@ class MetaProposal(Proposal):
         
         
     def __call__(self, x, pks={}):
-        i=choice(len(proposals), 1)
+        i=choice(len(proposals), 1)[0]
         prop=self.props[i]
         newx, g1,g2=prop(x)
         return newx, g1,g2,1,1,1
