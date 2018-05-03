@@ -35,7 +35,7 @@ def load_recombinations_wrapper(statistic, options, extra_info):
     elif options.simulate_recombination:
         res=[]
         for length in extra_info['setups']:
-            res.append(simulate_recombs(length,options.recomb_rate, skewness=options.skewness))
+            res.append(simulate_recombs(length,options.sim_recomb_rate, skewness=options.skewness))
         extra_info['recombs']=res
         return (statistic,res)
     else:

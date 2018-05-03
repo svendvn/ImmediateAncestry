@@ -70,30 +70,30 @@ class likelihood_class(object):
             self.values_dic[reduced]=res
             return res
     
-def generate_likelihood_from_generators(transition_generator, emission_generator_function, initial_probabilities, sequence, char_map):
-    def likelihood(params):
-        #return 0 #for testing
-        emission_generator=emission_generator_function(params)
-        
-        _, Cs= tmhmm.hmm.forward2(sequence, numpy.array(initial_probabilities), transition_generator, emission_generator, char_map, None, None)
-        ##FIXME: math domain error
-        res=0
-        for C in Cs:
-            if C<=0:
-                return -float('Inf')
-            res=res+log(C)
-        return res
-    return likelihood
+# def generate_likelihood_from_generators(transition_generator, emission_generator_function, initial_probabilities, sequence, char_map):
+#     def likelihood(params):
+#         #return 0 #for testing
+#         emission_generator=emission_generator_function(params)
+#         
+#         _, Cs= tmhmm.hmm.forward2(sequence, numpy.array(initial_probabilities), transition_generator, emission_generator, char_map, None, None)
+#         ##FIXME: math domain error
+#         res=0
+#         for C in Cs:
+#             if C<=0:
+#                 return -float('Inf')
+#             res=res+log(C)
+#         return res
+#     return likelihood
 
 
 
 
     
 
-def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, generations=3, short_to_full=id_dic()):
+def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, generations=3, short_to_full=id_dic(), rho_infinity=False):
     list_of_likelihoods=[]
     for alleles, recomb_map, seq in zip(alleles_list, recomb_map_list, seq_list):
-        trans_gen=matrix_generation.generate_transition_matrix(recomb_map, generations)
+        trans_gen=matrix_generation.generate_transition_matrix(recomb_map, generations, rho_infinity)
         ems_gen=matrix_generation.generate_emission_matrix(alleles, generations)
         M=(2**(generations-1))**2
         initial=[1.0/M]*M
@@ -159,7 +159,7 @@ def get_best_of_size(listi, size):
         if cval<bval:
             band=cand
             bval=cval
-    return band
+    return bval
 
 
 
@@ -180,18 +180,21 @@ if __name__ == '__main__':
     #lik=test_model_likelihood(8)
     #print(maximize_likelihood_exhaustive(lik,["pop1","pop2"]))
     print(find_smallet_equivalence_class(["a","b","a","a","a","b","a","a"]))
-    n=2**3
+    n=2**4
     combinations=[]
     counter=0
-    for itera in product(*([['a','b','c','d']]*n)):
-        print(itera)
+    for a,itera in enumerate(product(*([['a','b','c','d']]*n))):
+        #print(itera)
+        if a%10000==0:
+            print(itera)
         if find_smallet_equivalence_class(itera) in combinations:
-            print(str(itera), "skipped")
+            #print(str(itera), "skipped")
             continue
         counter+=1
-        combinations.append(itera)
+        #combinations.append(itera)
+        
         #likelihoods.append(counter)
-        print(itera)
+        #print(itera)
     print('counter',counter)
         
     

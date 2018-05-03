@@ -21,7 +21,15 @@ def transition_matrix(rho, s):
     two_ancestries=numpy.kron(one_ancestry, one_ancestry)
     return two_ancestries
 
-def generate_transition_matrix(rho_distances, s):
+def infinity_transition_matrix(s):
+    M=(2**(s-1))**2
+    return numpy.ones((M,M))*(1.0/M)
+
+def generate_transition_matrix(rho_distances, s, rho_infinity=False):
+    if rho_infinity:
+        def inf_rho_generator(index_of_sequence):
+            return infinity_transition_matrix(s)
+        return inf_rho_generator
     def generator(index_of_sequence):
         return transition_matrix(rho_distances[index_of_sequence-1], s)
     return generator

@@ -4,10 +4,11 @@ from proposal import Proposal
 
 class Permutation(Proposal):
     
+    
     def __call__(self, config):
         config=list(config)
         if len(set(list(config)))==1:
-            return config,1,1
+            return ''.join(config),1,1
         else:
             i,j=choice(range(len(config)),2,replace=False)
             a,b=config[i],config[j]

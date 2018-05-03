@@ -45,7 +45,8 @@ parser.add_argument('--mock_likelihood', action='store_true', default=False, hel
 #simulation arguments
 parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is the list of data processing steps to go through. 1 is from scratch, no inputs. 2 is deprecated. 3 is only allele frequencies. 4 is allele frequencies and ancestral sequences. 5 is allele frequencies, ancestral sequences and recombination. 6 is allelfreqs, recombs and sequences. 7 is the same as 6 but packed nicely together.')
 parser.add_argument('--simulate_recombinations', default=False, action='store_true', help='If one doesnt provide a recombination map, the program will throw an error unless this is flag is turned on')
-parser.add_argument('--recomb_rate', type=float, default=0.1, help="If recombination rate is simulated, this is the average recombination probability.")
+parser.add_argument('--sim_recomb_rate', type=float, default=0.1, help="If recombination rate is simulated, this is the average recombination probability.")
+parser.add_argument('--recomb_rate_infinity', default=False, action='store_true', help='This will set the recombination rate to infinity, meaning that there is assumed no linkage.')
 parser.add_argument('--skewness', type=float, default=4, help="The skewness of the simulated recombination rates. If set to 0, there will be a constant recombination rate. Values below -1 are not meaningful")
 parser.add_argument('--ancestors', type=str, default=[], nargs='+', help="This is the names of the ancestors in the ancestor files which are chosen as ancestors if the sequences are simulated from non-simulated ancestors.")
 parser.add_argument("--ancestor_indices", type=int, default=[], nargs="+", help="This list of numbers are the indices of the ancestors in the ancestor files which are chosen as ancestors.")
@@ -148,8 +149,17 @@ print('pops', extra_info['pop_names'])
 # for recs in recombs:
 #     recombs_tmp.append([0.1 for _ in recs])
 # recombs=recombs_tmp
-likelihoods=[generate_likelihood_from_data(allele_frequencies, recombs, seq_system, options.generations, short_to_full) for seq_system in sequences]
-print('likelihoods', likelihoods)
+likelihoods=[generate_likelihood_from_data(allele_frequencies, 
+                                           recombs, seq_system, 
+                                           options.generations, 
+                                           short_to_full,
+                                           rho_infinity=options.recomb_rate_infinity) for seq_system in sequences]
+likelihood=likelihoods[0]
+#print(likelihood.sequence)
+
+#import sys
+#sys.exit()
+#print('likelihoods', likelihoods)
 if options.mock_likelihood:
     likelihoods=[mock_likelihood for _ in likelihoods]
 if options.type_of_analysis=='brute-force':
