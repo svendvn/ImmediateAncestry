@@ -6,7 +6,8 @@ def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from, generations=
     likelihoods=[]
     counter=0
     n=2**generations
-    print('pops_to_choose_from', pops_to_choose_from)
+
+
     for itera in product(*([pops_to_choose_from]*n)):
         if find_smallet_equivalence_class(itera) in combinations:
             print(str(itera), "skipped")

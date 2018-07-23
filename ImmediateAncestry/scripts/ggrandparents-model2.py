@@ -61,7 +61,6 @@ parser.add_argument("--allele_frequencies", type=str, default=['../../../prepare
 '../../../prepared_data/freqs/chr19_freqs.txt','../../../prepared_data/freqs/chr20_freqs.txt',
 '../../../prepared_data/freqs/chr21_freqs.txt','../../../prepared_data/freqs/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies in the known populations. Each file correspond to a chromosome and they contain space_separated lines of the allele frequencies of length N genes.")
 
-
 # # # Recombination Arguments 
 parser.add_argument('--max_numberof_recombs', type=str, nargs='+', default=[-1], help="Argumnt to fix a maximun number of recombinations allowed per chromosome. Default is -1, which means that all the recombinations are allowed.")
 
@@ -69,21 +68,16 @@ parser.add_argument('--num_recombs', type=str, nargs='+', default=[2], help="Num
 
 # # # #
 
-# # # Generation  and Index
-parser.add_argument('--generations', type=int, default=2, help='The number of generations to go back. The number of ancestors to estimate will be 2 to the power of this number.')
-
-parser.add_argument('--seq_indices', type=int, default=[0], nargs='+', help='the same as seq but here using indices instead of names.')
-# # #
-
-
-
 parser.add_argument('--outfiles', type=str, nargs='+', default=["immediate_ancestry_results.txt"], help="These are the files where the output will be written.")
 
+
+#model arguments
+parser.add_argument('--generations', type=int, default=3, help='The number of generations to go back. The number of ancestors to estimate will be 2 to the power of this number.')
 
 #technical arguments
 parser.add_argument("--seq", type=str, default=[], nargs="+", help="If seq_files contains many lines of corresponding to different ancestors, this list specifies which individual(s) to include in the analysis")
 
-
+parser.add_argument('--seq_indices', type=int, default=[0], nargs='+', help='the same as seq but here using indices instead of names.')
 
 parser.add_argument('--ploidy_discrepancy', type=int, default=1, help='The seq_files are assumed to be diploid, but if they are haploid (and have no missing data) this can be set to 2, such that the program will combine the two specified haploid sequences into a diploid sequence.')
 

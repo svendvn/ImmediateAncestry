@@ -5,12 +5,18 @@ from proposal import Proposal
 class Substitution(Proposal):
     
     def __call__(self, config):
+        print("__call__(self, config). Substitution(Proposal)")
+
         config=list(config)
+        print ("config", config)
         i=choice(len(config))
+        print ("i", i)
         bases=deepcopy(self.pops)
+        print ( "bases = ", bases)
         #print('config', config)
         #print(bases, config[i])
         bases.remove(config[i])
+        print ( "bases (remove config[i])= ", bases)
         config2=deepcopy(config)
         #print(choice(bases,1))
         config2[i]=choice(bases,1)[0]
