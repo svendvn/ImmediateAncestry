@@ -1,7 +1,7 @@
 '''
 Created on 11/10/2016
 
-@author: svendvn
+@author: svendvn, natalia
 '''
 
 
