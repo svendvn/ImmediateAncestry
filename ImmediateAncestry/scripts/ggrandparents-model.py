@@ -133,7 +133,7 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
                                                              'mcmc_search', 
                                                              'evaluate_likelihoods'], 
                     default='mcmc_search',
-		#default='brute-force',
+        #default='brute-force',
                     help='chooses the type of analysis to run on the data. \
                           brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)). It is strongly adviced not to use this setting for generations>=4. \
                           evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test \
@@ -194,7 +194,7 @@ if options.auto_outfile_name:
 # -------------------------           
 
 likelihoods=[generate_likelihood_from_data(allele_frequencies, 
-                                           recombs, seq_system, 
+                                           recombs, seq_system,  options.max_numberof_recombs,noptions.um_recombs ,
                                            options.generations, 
                                            short_to_full,
                                            rho_infinity=options.recomb_rate_infinity) for seq_system in sequences]
@@ -226,8 +226,8 @@ if options.type_of_analysis=='mcmc_search':
 res=''
 
 for bd,outfile in zip(ad, options.outfiles):
-	# bd :  [('ettv', -13093.757802897619), ('tvtv', -13094.839761384726),....
-	# outfile : 
+    # bd :  [('ettv', -13093.757802897619), ('tvtv', -13094.839761384726),....
+    # outfile : 
     res=''
     for params,likel in bd:
         print("params = ", params)
@@ -240,5 +240,4 @@ for bd,outfile in zip(ad, options.outfiles):
     print("res = ", res)
     with open(outfile   , "w") as f:
         f.write(res)
-
 
