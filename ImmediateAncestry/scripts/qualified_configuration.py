@@ -29,6 +29,8 @@ from New_transition_emission_Matrix import transformation_TransitionMatrix
 from New_transition_emission_Matrix import transformation_EmissionMatrix
 from New_transition_emission_Matrix import initial_matrix
 
+from simulate_hiddenStates import sim_hidden_states
+from simulate_hiddenStates import plot_Chrom_simple_SimHS
 
 
 code_to_index={"A":0, "C":1, "G":2, "T":3}
@@ -80,59 +82,17 @@ parser.add_argument("--allele_frequencies", type=str, default=['../../../prepare
 '../../../prepared_data/freqs/chr17_freqs.txt','../../../prepared_data/freqs/chr18_freqs.txt',
 '../../../prepared_data/freqs/chr19_freqs.txt','../../../prepared_data/freqs/chr20_freqs.txt',
 '../../../prepared_data/freqs/chr21_freqs.txt','../../../prepared_data/freqs/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies in the known populations. Each file correspond to a chromosome and they contain space_separated lines of the allele frequencies of length N genes.")
-# # # #
-# # # # Old data
-#parser.add_argument("--seq_files", type=str, nargs="+", 
-#default=['/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq1.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq2a.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq2b.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq3.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq4.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq5.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq6.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq7.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq8.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq9.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq10.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq11.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq12.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq13.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq14.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq15.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq16.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq17.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq18.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq19.txt',
-#'/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq20.txt','/home/nat/NATALIA/prepared_data/OLD_data/seqs/Tseq22.txt'], help="This is a list of files. Each file correspond to a different chromosome. The files should contain space separated lines of allele types. 0,1,2 means that there are 0,1 or 2 copies of the allele. 3 is missing data.")
-
-#parser.add_argument("--recomb_map", type=str, default=['../../../prepared_data/OLD_data/rhos/rho_1.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_2a.txt','../../../prepared_data/OLD_data/rhos/rho_2b.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_3.txt','../../../prepared_data/OLD_data/rhos/rho_4.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_5.txt','../../../prepared_data/OLD_data/rhos/rho_6.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_7.txt','../../../prepared_data/OLD_data/rhos/rho_8.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_9.txt','../../../prepared_data/OLD_data/rhos/rho_10.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_11.txt','../../../prepared_data/OLD_data/rhos/rho_12.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_13.txt','../../../prepared_data/OLD_data/rhos/rho_14.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_15.txt','../../../prepared_data/OLD_data/rhos/rho_16.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_17.txt','../../../prepared_data/OLD_data/rhos/rho_18.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_19.txt','../../../prepared_data/OLD_data/rhos/rho_20.txt',
-#'../../../prepared_data/OLD_data/rhos/rho_22.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. Each file correspond to one chromosome and contains a single space-separated line of N-1 genetic distances, where N is the number of SNPs. The genetic distance is measured in probability of recombination in one generation between the two SNPs.")
-
-#parser.add_argument("--allele_frequencies", type=str, default=['../../../prepared_data/OLD_data/freqs/chr1_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr2a_freqs.txt','../../../prepared_data/OLD_data/freqs/chr2b_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr3_freqs.txt','../../../prepared_data/OLD_data/freqs/chr4_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr5_freqs.txt','../../../prepared_data/OLD_data/freqs/chr6_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr7_freqs.txt','../../../prepared_data/OLD_data/freqs/chr8_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr9_freqs.txt','../../../prepared_data/OLD_data/freqs/chr10_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr11_freqs.txt','../../../prepared_data/OLD_data/freqs/chr12_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr13_freqs.txt','../../../prepared_data/OLD_data/freqs/chr14_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr15_freqs.txt','../../../prepared_data/OLD_data/freqs/chr16_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr17_freqs.txt','../../../prepared_data/OLD_data/freqs/chr18_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr19_freqs.txt','../../../prepared_data/OLD_data/freqs/chr20_freqs.txt',
-#'../../../prepared_data/OLD_data/freqs/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies in the known populations. Each file correspond to a chromosome and they contain space_separated lines of the allele frequencies of length N genes.")
-# # # #
 
 # # # Recombination Arguments 
 parser.add_argument('--max_numberof_recombs', type=str, nargs='+', default=1, help="Argumnt to fix a maximun number of recombinations allowed per chromosome. Default is -1, which means that all the recombinations are allowed.")
 
 parser.add_argument('--num_recombs', type=str, nargs='+', default=1, help="Numer of recombinations allwed in case that the previous argument is enabled.")
 
-# # # #
-
 # # # Generations and Index
 parser.add_argument('--generations', type=int, default=2, help='The number of generations to go back. The number of ancestors to estimate will be 2 to the power of this number.')
 
-parser.add_argument('--seq_indices', type=int, default=[218], nargs='+', help='the same as seq but here using indices instead of names.')
+parser.add_argument('--seq_indices', type=int, default=[250], nargs='+', help='the same as seq but here using indices instead of names.')
+
 # # #
 
 
@@ -163,7 +123,7 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
                                                              'mcmc_search', 
                                                              'evaluate_likelihoods'], 
                     default='mcmc_search',
-		#default='brute-force',
+        #default='brute-force',
                     help='chooses the type of analysis to run on the data. \
                           brute-force searches all possible combinations of gparents (based on the populations specified in allele_frequencies(that may be simulated)). It is strongly adviced not to use this setting for generations>=4. \
                           evaluate_likelihoods evaluates the likelihoods specified in the list --configs_to_test \
@@ -184,7 +144,7 @@ options.full_to_short=full_to_short
 if options.true_pops:
     options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
 if options.simulate_recombinations:
-    pass # here we pass because this means that there is no information about the number of SNPs based on the 		recombination map recombs=get_recombinations(options.recomb_map, )
+    pass # here we pass because this means that there is no information about the number of SNPs based on the         recombination map recombs=get_recombinations(options.recomb_map, )
 elif options.recomb_map:
     recombs, setups=read_recombination_file(options.recomb_map)
     extra_info={'setups':setups}
@@ -206,197 +166,102 @@ if options.auto_outfile_name:
 
 # -------------------------------
 # -------------------------------
-def calc_colors_SimHS(colores):
-	color_dictionary={}
-	color=0
-	for key in colores:
-		color=color+1
-		colores[key]=color
-	return colores
+def get_leng (sequences):
+    lengseq=[]
+    totaleng=0
+    for seq in sequences:
+        lengseq.append(len(seq))
+        totaleng=totaleng+len(seq)
+    return lengseq,totaleng
 
 
 
-def sim_hidden_states(alleles_list, recomb_map_list, params, seq_list, generations,max_numberof_recombs,num_recombs ,full_to_short=id_dic(), short_to_full=id_dic()):
-	#f=open("filepos.txt","w") 
-	#chrmos=1
-	#chrmos=['chrm1','chrm2a','chrm2b','chrm3','chrm4','chrm5','chrm6','chrm7','chrm8','chrm9','chrm10','chrm11','chrm12','chrm13','chrm14','chrm15','chrm16','chrm17','chrm18','chrm19','chrm20','chrm21','chrm22']
-	hidden_states=[]
-	colores={}
-	for alleles, recomb_map, seq in zip(alleles_list, recomb_map_list, seq_list):
+def percent_calculation (states, leng_seqs):
+    percentg={}
+    i=0
+    for stat in states:
+        for key in stat:
+            if key in percentg:
+                percentg[key]=percentg[key]+((len(stat[key])/leng_seqs[i])/23)
+                #print ("Key in percent",percentg[key], len(stat[key]),leng_seqs[i])
+            else:
+                percentg[key]=(len(stat[key])/leng_seqs[i])/23
+                #print("New key", len(stat[key]),leng_seqs[i])
+        i=i+1
+    return percentg
 
-		#postFile="simHD_"+chrma+".txt"
-		#f=open(postFile,"w")
+    
 
-		trans_gen=generate_transition_matrix(recomb_map, generations, False, max_numberof_recombs, num_recombs)
+def filter_percentages(percentg,generations,min_porc):
+    correct={}
+    correct_number={}
+    eliminado=0
+    eliminado2=0
+    total=0
+    total2=0
+    for key in percentg:
+        if percentg[key] > min_porc:
+            correct[key]=percentg[key]
+            total=total+1
+        else:
+            eliminado=eliminado+percentg[key]
+    if total != 0:
+        for key in correct:
+            correct[key]=correct[key]+(eliminado/total)
 
-		ems_gen=matrix_generation.generate_emission_matrix(alleles, generations,max_numberof_recombs, num_recombs)
-
-		params2=[short_to_full[p] for p in params]
-		emission_generator=ems_gen(params2)
-
-		extrat_conf_index_from_emMat(alleles,generations,full_to_short,max_numberof_recombs,num_recombs)
-		initial=initial_matrix(generations,max_numberof_recombs,num_recombs)
-		
-		char_map={str(i):i for i in range(6)}
-	
-		seq2="".join(map(str,seq))
-
-	#	print("Trans_Mat\n", trans_gen(0))
-	#	print("Ems_Mat\n", emission_generator(0))
-	#	print("Initial\n", initial)
-
-		fv, constant= tmhmm.hmm.forward2(seq2, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-
-		bv = tmhmm.hmm.backward2(seq2, constant,numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-
-		matrix=numpy.multiply(fv,bv)
-		Cj=numpy.sum(matrix, axis=1)
-		Cjreshape=Cj.reshape(len(Cj),1)
-		Pmatrix=numpy.divide(matrix,Cjreshape)
-		
-		xs=[]
-		N,M=Pmatrix.shape		
-
-		st=numpy.random.choice(list(range(M)),1, p=Pmatrix[0,:])
-
-		xs.append(st)
-
-		states_func=extrat_conf_index_from_emMat(alleles, generations, full_to_short, max_numberof_recombs, num_recombs)
-		states=states_func(params2)
-
-		correct_states=[]
-		for i in states:
-			correct_states.append(find_smallet_equivalence_class(i)) 
-		#print ("correctstates", correct_states)
-		#print ("Primer st", st)
-		#print ("Primer correct state", correct_states[st])
-			colores[i]=""
-		
-		couples={}
-		couples[correct_states[st]]=[0]
-
-		#f.write(str(correct_states[st]))
-		#f.write(" ")
-
-		for j in range(1,len(seq)):
-			
-			em=emission_generator(j)
-			tr=trans_gen(j-1)
-
-		#	P=numpy.array(numpy.asmatrix(bv)[j,:] * em[:,seq[j]].T * tr[xs[j-1],:])
-			P=numpy.array( bv[j,:] *numpy.squeeze(numpy.asarray(em[:,seq[j]].T))* numpy.squeeze(numpy.asarray(tr[xs[j-1],:])))	
+    return correct
 
 
-			P=P/(numpy.sum(P))
+def get_states(generations):
+    states=[]
+    ran=int((2**generations)/2)
 
-			
-			st=numpy.random.choice(list(range(M)),1, p=P)
+    for i in range (1, ran+1):
+        for j in range (1, ran+1):
+            states.append([i,j])
+    return states
 
-			xs.append(st[0])
-		#	if st != xs[-2]:
-				
+def order_pairs(correct_pairs, params, hd_states, number_hd_states, num_states):
+    real_st={}
+    print ("correct_pairs",correct_pairs) #{'vv': 0.7320877573385787, 'tv': 0.267912242661421}
+    print("\nhd_states", hd_states) #['tt', 'tv', 'vt', 'vv', 'tt', 'tv', 'vt', 'vv']
+    print("\nnumber_hd_states", number_hd_states) #{1: 0.14114061050492557, 2: 0.20327340195255555, 3: 0.5308123868003711, 6: 0.06798604055307682, 7: 0.05678756018907099}
+    print("\nstates",num_states)#[[1, 1], [1, 2], [2, 1], [2, 2]]
+    #for key in number_hd_states:
 
-			#	print("Bk",bv[j-1:j+1,:])
-		#		b,r,t=bv[j,:],em[:,seq[j]],tr[xs[j-1],:]
-			#	print(b*r)
-			#	print(r*t)
-			#	bb=numpy.asmatrix(b/numpy.sum(b))
-			#	em=r/numpy.sum(r)
-			#	tr=t/numpy.sum(t)
+    #    real_st[key]= number_hd_states[key]
 
-			#	print(type(numpy.asmatrix(bv)))
-			#	print(type(em))
-			#	print(type(tr))
+    #print (real_st)
 
-			#	b2=numpy.asmatrix(bv)[j,:]
-			#	b3=numpy.asmatrix(b)
-		#		print("b",b)
-			#	print("b2",b2)
-			#	print("b3",b3)
-			#	print("b",type(b), b.shape)
-			#	print("b2", type(b2), b2.shape)
-			#	print("b3", type(b3), b3.shape)
-		#		print("r", r)
-		#		print("t", t)
-			#	print("rshape", r.shape)
-			#	print("tshape", t.shape)
-				#print(type(em[:,seq[j]]))
-				#print(type(tr[))
-		#		print ("P",P)
+    #for key in correct_pairs:
+        #correct_pairs[key]='%.0f'%(correct_pairs[key]/(porct+0.05))
 
-		
-			if correct_states[st] in couples:
-				input_val=couples[correct_states[st]]
-				input_val.append(j)
-				couples[correct_states[st]]=input_val
-				#f.write(str(correct_states[st]))
-				#f.write(" ")
-				
-
-			else:
-				couples[correct_states[st]]=[j]
-				#f.write(str(correct_states[st]))
-				#f.write(" ")
-				colores[correct_states[st]]=""
-
-		hidden_states.append(couples)
-
-
-		#if chrmos == 5:
-			#f.write(str(chrmos))
-		#	f.write(str(couples))
-		#chrmos=chrmos+1
-		#f.close()
-	print(len(hidden_states))
-	color_dic=calc_colors_SimHS(colores)
-	#f.close() 
-	return hidden_states, color_dic
-	
-
-def plot_Chrom_simple_SimHS (states,color_dic):
-#	print(states)
-	final_axisX=0
-	alty=0
-	#possible_colors = ['none','green','red','turquoise','orange','royalblue','blue','black','fuchsia','yellow','salmon','sienna','chartreuse','lightseagreen','silver','darkcyan','blueviolet', 'purple','pink','tan','olivedrab','tomato','moccasin','gold','mediumspringgreen','brown1','cadetblue4','cadmiumorange','chartreuse1', 'cobalt','cobaltgreen','crimson','darkorchid4','deeppink4','gray59','hotpink','lightblue1','lightslateblue',]
-
-	possible_colors = {'ee':'green','et':'red','es':'turquoise','ev':'orange','tt':'royalblue', 'ts':'blue','tv':'black','ss':'fuchsia',
-'sv':'yellow','vv':'pink','vs':'sienna','vt':'chartreuse','ve':'lightseagreen','st':'silver','se':'darkcyan', 'te':'blueviolet'} #, purple',,'tan', 'olivedrab','tomato','moccasin','gold','mediumspringgreen', 'brown1','cadetblue4','cadmiumorange','chartreuse1','cobalt','cobaltgreen' ,'crimson','darkorchid4', 'deeppink4','gray59','hotpink','lightblue1','lightslateblue'
-	i=0
-	legend=[]
-	for configs in states:
-		axisX=0
-		alty=alty+1
-
-		for key in configs:
-			pos=configs[key]
-	
-			axisX=axisX + len(pos)
-			y=[alty]*len(pos)
-			plt.plot(pos,y, "|",label=key, markersize=5,color=possible_colors[key])
-
-			#if i<len(color_dic):
-		#	if key not in legend:
-		#		#print ("legend color", key)
-		#		plt.legend(loc='best', markerscale=0.5, scatterpoints=1, fontsize=10 ,numpoints=50)
-		#		legend.append(key)
-		#		i=i+1
-
-			if i<len(color_dic):
-				plt.legend(loc='best', markerscale=0.5, scatterpoints=1, fontsize=10 ,numpoints=50)
-				i=i+1
+    
+    #return correct_pairs
 
 
 
-		if final_axisX< axisX:
-			final_axisX= axisX
-	#plt.legend(loc='best', markerscale=0.5, scatterpoints=1, fontsize=10 ,numpoints=50)	
-	plt.axis([-10,final_axisX+100 , 0, alty+0.5])
+def qualified_configuration (states, params, generations,leng_seqs, total_leng, hd_states, number_hd_states):
+    min_porc=1/(generations*2)
+    min_porc=min_porc - 0.05
 
-	#plt.plot(configs)
-	#plt.ylabel('Probability')
-	#plt.xlabel(paths)   
-#	plt.show()
-	plt.savefig('SimHD_i218_Kidongo_2gen_rhoNoInf_1maxRec.png')
+    percentg=percent_calculation (states, leng_seqs)
+
+    for state in number_hd_states:
+        number_hd_states[state]=number_hd_states[state]/total_leng
+
+    correct_pairs=filter_percentages(percentg,generations,min_porc)
+    num_states=get_states(generations)
+
+    configuration=order_pairs(correct_pairs, params, hd_states, number_hd_states, num_states)
+
+    return configuration
+    
+    
+
+    #print (correct_pairs)
+
+
 
 # -------------------------------  int main  ------------------------------- #
 
@@ -406,18 +271,21 @@ def plot_Chrom_simple_SimHS (states,color_dic):
 #print("sequences",len(sequences))
 #print("generations",options.generations)
 
-#name="i0_Brigitte"	#i1_11046 , i2_Dandy , i3_11371 , i4_11571
-
-
-#name="i250_Donald"
+#name="i0_Brigitte"
+name="i250_Donald"
 #name="i242_Clara"
-name="i218_Kidongo"
+#name="i218_Kidongo"
+
+
 params=read_config_file(name, options.generations)
 
-states, colors=sim_hidden_states(allele_frequencies, recombs, params,sequences[0],options.generations, options.max_numberof_recombs, options.num_recombs,full_to_short, short_to_full)
-plot_Chrom_simple_SimHS(states, colors)
+###    Simulated Hidden States
+states, colors, hd_states, number_hd_states=sim_hidden_states(allele_frequencies, recombs, params,sequences[0],options.generations, options.max_numberof_recombs, options.num_recombs,full_to_short, short_to_full)
 
 
+###    Qualified Configuration 
+leng_sequences, total_leng=get_leng(sequences[0])
+qualif_config=qualified_configuration (states, params, options.generations, leng_sequences, total_leng, hd_states, number_hd_states )
 
 
 
