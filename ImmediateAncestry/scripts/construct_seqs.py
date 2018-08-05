@@ -1,5 +1,14 @@
 from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate, zero_one_ize
 from numpy.random import choice
+from rethin import rethin_sequences, rethin_allele_frequencies, rethin_recombination
+
+
+def rethin_wrapper(statistic, options, extra_info):
+    sequences, allele_frequencies, recombs=statistic
+    new_sequences=rethin_sequences(sequences,options.thin_coef)
+    new_allele_frequencies=rethin_allele_frequencies(allele_frequencies, options.thin_coef)
+    new_recombs=rethin_recombination(recombs, options.thin_coef)
+    return new_sequences, new_allele_frequencies, new_recombs
 
 
 def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
@@ -62,6 +71,13 @@ def package_the_deal_wrapper(statistic, options, extra_info):
         _=read_allele_frequencies(options.allele_frequencies, options.truncate_af, extra_info)
     return (statistic, extra_info['allele_frequencies'], extra_info['recombs'])
 
+
+   
+    
+
+            
+    
+
 def get_indices_of_pops(chosen_pops, all_names, short_to_full):
     res=[]
     for chosen_pop in chosen_pops:
@@ -120,7 +136,8 @@ transitions={
              (5,6): simulate_generations_wrapper,
              #(3,6): simualte_mixed_individual_wrapper,
              #(2,6): choose_seqs_wrapper
-             (6,7): package_the_deal_wrapper
+             (6,7): package_the_deal_wrapper,
+             (7,8): rethin_wrapper
              }
 
 
@@ -344,23 +361,25 @@ if __name__=='__main__':
         pass
 
     options=Object()
-    options.sequences_pipeline=[1,3,4,5,6]
+    options.sequences_pipeline=[1,3,4,5,6,7,8]
     
     options.true_pops=None
-    options.no_pops=4
+    options.no_pops=2
     options.population_names=[]
     options.SNPs=37
-    options.reps=5
+    options.reps=1
     options.generations=3
     options.short_to_full=id_dic()
     options.simulate_recombination=True
+    options.sim_recomb_rate=0.02
     options.recomb_rate=0.1
     options.skewness=1
     options.sequence_multiplier=1
+    options.thin_coef=2
     ei={}
     
     a=get_seqs(options,ei)
     print(a)
     
-    print(get_wrapped_seqs(seq=[], seq_indices=[0,1], ploidy_discrepancy=1))
+    #print(get_wrapped_seqs(seq=[], seq_indices=[0,1], ploidy_discrepancy=1))
     
