@@ -10,6 +10,7 @@ from shortcut_names import read_shortcuts
 from setup_MCMC import mcmc_search
 from id_dic import id_dic
 from mock_likelihood import mock_likelihood
+from print_structure import print_recombination_structure, print_sequence_structure
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
 
@@ -72,6 +73,7 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
 parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='If type_of_analysis is evaluate_likelihoods this is a file(which has to contain a dot) of all the likelihoods to evaluate. It has to be space separated and a configuration on each line.')
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coefficient. If it is n, for each chromosome n new chromosomes will be made. If an original sequence is 1,2,3,4,5,.., a new sequences will be j,n+j,2n+j,.., for j=1,...,n. One has to put 7 8 in the sequences pipeline')
+parser.add_argument('--')
 
 #annealing arguments
 
@@ -104,7 +106,12 @@ else:
 
 outp = get_seqs(options,  extra_info)
 
+
+
 sequences, allele_frequencies, recombination_map= outp
+
+print_recombination_structure(recombination_map)
+print_sequence_structure(sequences)
 
 if options.auto_outfile_name:
     outfiles=[]
