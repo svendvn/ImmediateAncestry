@@ -25,6 +25,11 @@ def infinity_transition_matrix(s):
     M=(2**(s-1))**2
     return numpy.ones((M,M))*(1.0/M)
 
+def initial_matrix(generations):
+    M=(2**(generations-1))**2
+    M=[1.0/M]*M
+    return M
+
 def generate_transition_matrix(rho_distances, s, rho_infinity=False):
     if rho_infinity:
         def inf_rho_generator(index_of_sequence):
@@ -85,19 +90,19 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
 
 
 if __name__=="__main__":
-    alleles={"pop1":[0.2,0.1,0.1], "pop2":[0.9,0.9,0.9]}
-    popsm=["pop1","pop2","pop1","pop1"]
-    popsf=["pop2","pop2","pop1","pop2"]
+    alleles={"pop1":[0.0384], "pop2":[0.4722]}
+    popsm=["pop2","pop2","pop2","pop2"]
+    popsf=["pop2","pop2","pop2","pop2"]
     mu=0.01
     ad=generate_emission_matrix(alleles,3)
     ad=ad(popsm+popsf)
     print(ad(0))
     print(numpy.sum(ad(0),axis=0))
-    print(numpy.sum(ad(1),axis=1))
+    print(numpy.sum(ad(0),axis=1))
     ad=generate_transition_matrix([0.1,0.0,0.0,0.0],3)
     print(ad(1))
-    print(numpy.sum(ad(0),axis=0))
-    print(numpy.sum(ad(1),axis=1))
+    #print(numpy.sum(ad(0),axis=0))
+    #print(numpy.sum(ad(1),axis=1))
     
     #we expect to get fff,ffm,fmf,fmm,mff,mfm,mmf,mmm
     
