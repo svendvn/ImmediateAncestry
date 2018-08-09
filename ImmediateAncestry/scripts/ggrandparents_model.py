@@ -63,6 +63,7 @@ class likelihood_class(object):
             params2=[self.short_to_full[p] for p in params]
             emission_generator=self.emission_generator_function(params2)
             _, Cs= tmhmm.hmm.forward2(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
+            print(Cs)
             res=0
             for C in Cs:
                 if C<=0:
