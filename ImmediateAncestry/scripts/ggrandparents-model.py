@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from numpy.random import choice
-from ggrandparents_model import generate_likelihood_from_data
+from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data
 from simulate_data import simulate, simulate_recombs, simulate_allele_frequencies
 from recombination import read_recombination_file
 from construct_seqs import get_seqs
@@ -44,7 +44,7 @@ parser.add_argument('--truncate_af', type=float, default=0.01, help='This will t
 parser.add_argument('--mock_likelihood', action='store_true', default=False, help='For testing. this will replace the costly likelihood with a likelihood that is just minus the hamming distance.')
 
 #simulation arguments
-parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is the list of data processing steps to go through. 1 is from scratch, no inputs. 2 is deprecated. 3 is only allele frequencies. 4 is allele frequencies and ancestral sequences. 5 is allele frequencies, ancestral sequences and recombination. 6 is allelfreqs, recombs and sequences. 7 is the same as 6 but packed nicely together.')
+parser.add_argument('--sequences_pipeline', type=int, nargs='+', default=[6,7], help='This is the list of data processing steps to go through. 1 is from scratch, no inputs. 2 is deprecated. 3 is only allele frequencies. 4 is allele frequencies and ancestral sequences. 5 is allele frequencies, ancestral sequences and recombination. 6 is allelfreqs, recombs and sequences. 7 is the same as 6 but packed nicely together. 8 is thinned data and 9 is binned data.')
 parser.add_argument('--simulate_recombinations', default=False, action='store_true', help='If one doesnt provide a recombination map, the program will throw an error unless this is flag is turned on')
 parser.add_argument('--sim_recomb_rate', type=float, default=0.1, help="If recombination rate is simulated, this is the average recombination probability.")
 parser.add_argument('--recomb_rate_infinity', default=False, action='store_true', help='This will set the recombination rate to infinity, meaning that there is assumed no linkage.')
@@ -73,13 +73,15 @@ parser.add_argument('--type_of_analysis', type=str, choices=['brute-force',
 parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_ellioti2.txt'], help='If type_of_analysis is evaluate_likelihoods this is a file(which has to contain a dot) of all the likelihoods to evaluate. It has to be space separated and a configuration on each line.')
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coefficient. If it is n, for each chromosome n new chromosomes will be made. If an original sequence is 1,2,3,4,5,.., a new sequences will be j,n+j,2n+j,.., for j=1,...,n. One has to put 7 8 in the sequences pipeline')
-parser.add_argument('--')
+parser.add_argument('--bin_window_size', type=int, default=1, help='The number of SNPs per bin.')
 
 #annealing arguments
 
 options = parser.parse_args()
 
-assert options.thin_coef==1 or 8 in options.sequences_pipeline, 'If thin_coef is not 1, 8 should be added to the covariance pipeline'
+assert (options.thin_coef>1)==(8 in options.sequences_pipeline), 'If thin_coef is not 1, 8 should be added to the covariance pipeline'
+assert (options.bin_window_size>1)==(9 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the covariance pipeline'
+
 
 if options.shortcut_names:
     full_to_short,short_to_full=read_shortcuts(options.shortcut_names)
@@ -107,8 +109,10 @@ else:
 outp = get_seqs(options,  extra_info)
 
 
-
-sequences, allele_frequencies, recombination_map= outp
+if 9 in options.sequences_pipeline:
+    sequences, allele_frequencies, recombination_map, bin_maps= outp
+else:
+    sequences, allele_frequencies, recombination_map= outp
 
 print_recombination_structure(recombination_map)
 print_sequence_structure(sequences)
@@ -149,7 +153,7 @@ if options.auto_outfile_name:
 
 #    print('seqs',sequences)
 print('pops', extra_info['pop_names'])
-#print('all_allele_frequencies',allele_frequencies)
+print('all_allele_frequencies',allele_frequencies[0].keys())
 #print('recombs',recombination_map)
 
 #print(recombs)
@@ -159,12 +163,23 @@ print('pops', extra_info['pop_names'])
 # for recs in recombs:
 #     recombs_tmp.append([0.1 for _ in recs])
 # recombs=recombs_tmp
-likelihoods=[generate_likelihood_from_data(allele_frequencies, 
-                                           recombs, seq_system, 
-                                           options.generations, 
-                                           short_to_full,
-                                           rho_infinity=options.recomb_rate_infinity) for seq_system in sequences]
-likelihood=likelihoods[0]
+
+if 9 in options.sequences_pipeline:
+    likelihoods=[generate_binned_likelihood_from_data(bin_maps,
+                                                      allele_frequencies, 
+                                                      recombs, seq_system, 
+                                                      extra_info['pop_names'],
+                                                      options.generations, 
+                                                      short_to_full,
+                                                      rho_infinity=options.recomb_rate_infinity) for seq_system in sequences]
+    likelihood=likelihoods[0]
+else:
+    likelihoods=[generate_likelihood_from_data(allele_frequencies, 
+                                               recombs, seq_system, 
+                                               options.generations, 
+                                               short_to_full,
+                                               rho_infinity=options.recomb_rate_infinity) for seq_system in sequences]
+    likelihood=likelihoods[0]
 #print(likelihood.sequence)
 
 #import sys

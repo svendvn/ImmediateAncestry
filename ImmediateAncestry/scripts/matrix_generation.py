@@ -38,7 +38,69 @@ def generate_transition_matrix(rho_distances, s, rho_infinity=False):
     def generator(index_of_sequence):
         return transition_matrix(rho_distances[index_of_sequence-1], s)
     return generator
+
+def calculate_before_dic(bin_map, ancestral_allele_frequencies, sequence, pops):
+    probabilities=[] #of the form [{'ee':0.331, 'et':0.1234,..., 'vv':0.0013}, {...},...,{...}].
+    pop_combinations=[tuple(sorted([p1,p2])) for n,p1 in enumerate(pops) for m,p2 in enumerate(pops) if n>=m]
+    for snp_list in bin_map:
+        bin_probs={pop_comb:0 for pop_comb in pop_combinations}
+        for i in snp_list:
+            ps= {pop:ancestral_allele_frequencies[pop][i] for pop in pops}
+            for pop_comb in pop_combinations:
+                bin_probs[pop_comb]+=numpy.log(calc_prob(ps[pop_comb[0]], 
+                                                         ps[pop_comb[1]], 
+                                                         sequence[i]))
+        probabilities.append(bin_probs)
+    return probabilities
+
+
+def subst(p,n):
+    if n==1:
+        return p
+    return 1.0-p
+
+def calc_prob(prob1,prob2,observed):
+    if observed==3:
+        return 1
+    elif observed==2:
+        n1=n2=1
+    elif observed==1:
+        n1=1
+        n2=0
+    elif observed==0:
+        n1=n2=0
+    prob= 0.5 * subst(prob1,n1) * subst(prob2,n2) + 0.5 * subst(prob1,n2) * subst(prob2,n1)
+    if observed==1:
+        return 2*prob
+    return prob
+                
+        
     
+def generate_emission_matrix_binned(before_dic,s):
+    '''
+    The ancestral allele dictionary is a dictionary of the form {individual_number:[]}
+    s is the number of generations back such that s=3 is great grandparents
+    '''
+    
+    
+
+    m=2**(s-1)
+    M=m**2
+    def generate(params):
+        pops_mother=params[:m]
+        pops_father=params[m:]
+        def generator(index_of_sequence):
+            ans=numpy.zeros((M,1))
+            for i,pop_mom in enumerate(pops_mother):   #the m ancestries of the mother
+                for j,pop_dad in enumerate(pops_father): #the m ancestries of the father
+                    i1=i*m+j
+                    ans[i1,0]=numpy.exp(before_dic[index_of_sequence][tuple(sorted([pop_dad,pop_mom]))])
+            return ans
+        return generator
+    
+    return generate
+
+
 def generate_emission_matrix(ancestral_allele_dictionary,s):
     '''
     The ancestral allele dictionary is a dictionary of the form {individual_number:[]}
@@ -83,6 +145,7 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
         return generator
     
     return generate
+
                         
                         
                 
@@ -106,4 +169,16 @@ if __name__=="__main__":
     
     #we expect to get fff,ffm,fmf,fmm,mff,mfm,mmf,mmm
     
+    sequence=[0]*9
+    allele_freqs={'a':[0.1]*3+[0.2]*6,'b':5*[0.01]+2*[0.99]+2*[0.01]}
+    bin_map=[list(range(4)), list(range(4,9))]
+    generations=2
+    params=['a','b','a','b']
+    a=calculate_before_dic(bin_map, allele_freqs, sequence, pops=set(allele_freqs.keys()))
+    print(bin_map)
+    print(a)
+    ad=generate_emission_matrix_binned(a,generations)
+    ad_params=ad(params)
+    print(ad_params(0))
+    print(ad_params(1))
     

@@ -1,6 +1,7 @@
 from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_recombs, simulate, zero_one_ize
 from numpy.random import choice
 from rethin import rethin_sequences, rethin_allele_frequencies, rethin_recombination
+from snp_binner import collapse_recombination_map, bin_sequences
 
 
 def rethin_wrapper(statistic, options, extra_info):
@@ -9,6 +10,14 @@ def rethin_wrapper(statistic, options, extra_info):
     new_allele_frequencies=rethin_allele_frequencies(allele_frequencies, options.thin_coef)
     new_recombs=rethin_recombination(recombs, options.thin_coef)
     return new_sequences, new_allele_frequencies, new_recombs
+
+def bin_wrapper(statistic, options, extra_info):
+    sequences, allele_frequencies, recombs=statistic
+    bin_maps=bin_sequences(sequences, options.bin_window_size)
+    new_recombs=collapse_recombination_map(recombs,bin_maps)
+    return sequences, allele_frequencies, new_recombs, bin_maps
+    
+    
 
 
 def simulate_allele_frequencies_wrapper(statistic, options, extra_info):
@@ -137,7 +146,9 @@ transitions={
              #(3,6): simualte_mixed_individual_wrapper,
              #(2,6): choose_seqs_wrapper
              (6,7): package_the_deal_wrapper,
-             (7,8): rethin_wrapper
+             (7,8): rethin_wrapper,
+             (7,9): bin_wrapper,
+             (8,9): bin_wrapper
              }
 
 
