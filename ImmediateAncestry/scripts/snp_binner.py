@@ -10,11 +10,12 @@ def bin_sequences(sequences, snps_per_bin):
 def bin_uniformly(sequence, snps_per_bin=100):
     n=len(sequence)
     bin_map=[]
-    i=0
-    while (i+1)*snps_per_bin<n:
-        bin_map.append(list(range(i*snps_per_bin, (i+1)*snps_per_bin)))
-        i+=1
-    bin_map.append(list(range(i*snps_per_bin,n)))
+    no_blocks=n//snps_per_bin
+    if no_blocks>1:
+        for i in range(no_blocks):
+            bin_map.append(list(range((i*n)//no_blocks, ((i+1)*n)//no_blocks)))
+    else:
+        bin_map=list(range(n))
     return bin_map
 
 def collapse_recombination_map(recombs, bin_maps):
@@ -33,8 +34,8 @@ def collapse_recombination_map(recombs, bin_maps):
             
 
 if __name__=='__main__':
-    sequence=[0]*105
-    recombs=[1]*105
-    print(bin_uniformly(sequence))
+    sequence=[0]*109
+    recombs=[1]*109
+    print(bin_uniformly(sequence,10))
     nr=collapse_recombination_map([recombs], [bin_uniformly(sequence, 10)])
     print(nr)
