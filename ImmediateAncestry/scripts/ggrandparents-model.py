@@ -74,6 +74,7 @@ parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coefficient. If it is n, for each chromosome n new chromosomes will be made. If an original sequence is 1,2,3,4,5,.., a new sequences will be j,n+j,2n+j,.., for j=1,...,n. One has to put 7 8 in the sequences pipeline')
 parser.add_argument('--bin_window_size', type=int, default=1, help='The number of SNPs per bin.')
+parser.add_argument('--combine_last_two_bins', action='store_true', default=False, help='When binning the last interval can become too small. Supplying this ')
 
 #annealing arguments
 
