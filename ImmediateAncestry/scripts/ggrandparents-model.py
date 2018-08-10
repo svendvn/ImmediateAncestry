@@ -11,6 +11,8 @@ from setup_MCMC import mcmc_search
 from id_dic import id_dic
 from mock_likelihood import mock_likelihood
 from print_structure import print_recombination_structure, print_sequence_structure
+from simulate_hidden_states import plot_hidden_states, sim_hidden_states
+import re
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
 
@@ -22,12 +24,24 @@ The data pipeline is used for testing purposes because the program contains ways
 parser = ArgumentParser(usage=usage)
 
 #input/output arguments
-parser.add_argument("--seq_files", type=str, nargs="+", default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq21.txt',
+parser.add_argument("--seq_files", type=str, nargs="+", default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq17.txt',
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq18.txt',
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq19.txt',
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq20.txt',
+                                                                 '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq21.txt',
                                                                  '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/seq22.txt'], help="This is a list of files. Each file correspond to a different chromosome. The files should contain space separated lines of allele types. 0,1,2 means that there are 0,1 or 2 copies of the allele. 3 is missing data.")
-parser.add_argument("--recomb_map", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr21.txt',
+parser.add_argument("--recomb_map", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr17.txt',
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr18.txt',
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr19.txt',
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr20.txt',
+                                                       '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr21.txt',
                                                        '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/rho_chr22.txt'], nargs="+", help="This is a list of files containing the genetic distances between SNPs. Each file correspond to one chromosome and contains a single space-separated line of N-1 genetic distances, where N is the number of SNPs. The genetic distance is measured in probability of recombination in one generation between the two SNPs.")
 parser.add_argument('--outfiles', type=str, nargs='+', default=["immediate_ancestry_results.txt"], help="These are the files where the output will be written.")
-parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr21_freqs.txt',
+parser.add_argument("--allele_frequencies", type=str, default=['/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr17_freqs.txt',
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr18_freqs.txt',
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr19_freqs.txt',
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr20_freqs.txt',
+                                                               '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr21_freqs.txt',
                                                                '/home/svendvn/Dropbox/Bioinformatik/Zoomodel/data/rawData2/hybrids/chr22_freqs.txt'], nargs="+", help="This is a list of files containing the allele frequencies in the known populations. Each file correspond to a chromosome and they contain space_separated lines of the allele frequencies of length N genes.")
 
 #model arguments
@@ -74,7 +88,7 @@ parser.add_argument('--configs_to_test', type=str, nargs='+', default=['trivial_
 parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt', help='file that short cuts long names for easier readability. It is of the form [full_name short_name\n,...]')
 parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coefficient. If it is n, for each chromosome n new chromosomes will be made. If an original sequence is 1,2,3,4,5,.., a new sequences will be j,n+j,2n+j,.., for j=1,...,n. One has to put 7 8 in the sequences pipeline')
 parser.add_argument('--bin_window_size', type=int, default=1, help='The number of SNPs per bin.')
-parser.add_argument('--combine_last_two_bins', action='store_true', default=False, help='When binning the last interval can become too small. Supplying this ')
+parser.add_argument('--sim_and_plot_hidden_states', action='store_true', default=False, help='Will plot simulated hidden states for the best configuration')
 
 #annealing arguments
 
@@ -154,6 +168,7 @@ if options.auto_outfile_name:
 
 #    print('seqs',sequences)
 print('pops', extra_info['pop_names'])
+popn=[full_to_short[n] for n in extra_info['pop_names']]
 print('all_allele_frequencies',allele_frequencies[0].keys())
 #print('recombs',recombination_map)
 
@@ -207,8 +222,12 @@ res=''
 
 print(ad)
 
-for bd,outfile in zip(ad, options.outfiles):
+def extract_chrom_name(s):
+    return re.split('\W',s)[-2].split('_')[-1]
+
+for bd,outfile, likelihood_system in zip(ad, options.outfiles, likelihoods):
     res=''
+    best_params=bd[0][0]
     for params,likel in bd:
         #print(params)
         #print(likel)
@@ -218,5 +237,14 @@ for bd,outfile in zip(ad, options.outfiles):
     print(res)
     with open(outfile   , "w") as f:
         f.write(res)
+        
+    if options.sim_and_plot_hidden_states:
+        hidden_states= sim_hidden_states(likelihood_system.list_of_likelihoods, best_params)
+        chrom_names=map(extract_chrom_name, options.recomb_map)
+        individual_name=re.split('\W',outfile)[-2]
+        possible_pops=''.join(popn)
+        print(hidden_states)
+        plot_hidden_states(best_params, hidden_states, chrom_names, individual_name, possible_pops, plot_filename=None)
+        
 
 

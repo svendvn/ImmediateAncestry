@@ -35,6 +35,6 @@ def collapse_recombination_map(recombs, bin_maps):
 if __name__=='__main__':
     sequence=[0]*105
     recombs=[1]*105
-    print(bin_uniformly(sequence))
-    nr=collapse_recombination_map([recombs], [bin_uniformly(sequence, 10)])
+    print(bin_uniformly(sequence,110))
+    nr=collapse_recombination_map([recombs], [bin_uniformly(sequence, 110)])
     print(nr)

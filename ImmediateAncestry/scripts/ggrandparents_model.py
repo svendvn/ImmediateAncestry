@@ -59,14 +59,14 @@ class likelihood_class(object):
             return self.values_dic[reduced]
         else:
             params2=[self.short_to_full[p] for p in params]
-            emission_generator=self.emission_generator_function(params2)
-            _, Cs= tmhmm.hmm.forward2(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
+            emission_generator=self.emission_generator_function(params2, log=True)
+            _, Cs= tmhmm.hmm.forward2log(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
             res=0
             for C in Cs:
-                if C<=0:
+                if not numpy.isfinite(C):
                     self.values_dic[reduced]=-float('Inf')
                     return -float('Inf')
-                res=res+log(C)
+                res=res+C
             self.values_dic[reduced]=res
             return res
     
@@ -85,6 +85,13 @@ class likelihood_class(object):
 #         return res
 #     return likelihood
 
+class likelihood_system(object):
+    
+    def __init__(self, list_of_likelihoods):
+        self.list_of_likelihoods=list_of_likelihoods
+        
+    def __call__(self, param, pks={}):
+        return sum([lik(param,pks) for lik in self.list_of_likelihoods])
 
 
 def generate_binned_likelihood_from_data(bin_maps, alleles_list,recomb_map_list, seq_list, possible_pops, generations=3, short_to_full=id_dic, rho_infinity=False):
@@ -99,10 +106,7 @@ def generate_binned_likelihood_from_data(bin_maps, alleles_list,recomb_map_list,
         seq2="0"*len(bin_map)
         list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
         
-    def likelihood(param,pks={}):
-        return sum([lik(param,pks) for lik in list_of_likelihoods])
-    
-    return likelihood
+    return likelihood_system(list_of_likelihoods)
     
 
 def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, generations=3, short_to_full=id_dic(), rho_infinity=False):
@@ -116,10 +120,7 @@ def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, gener
         seq2="".join(map(str,seq))
         list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
         
-    def likelihood(param,pks={}):
-        return sum([lik(param,pks) for lik in list_of_likelihoods])
-    
-    return likelihood
+    return likelihood_system(list_of_likelihoods)
     
 
 

@@ -1,59 +1,83 @@
 from matrix_generation import generate_emission_matrix, generate_transition_matrix, initial_matrix
 import tmhmm
 import numpy
+import subprocess
+from six import string_types
+import os
+
 
 class id_dic(object):
     def __getitem__(self, key):
         return key
     
-def plot_hidden_states(params, hidden_states):
+def plot_hidden_states(params, hidden_states, chrom_names, individual_name, shortcut_name_file, plot_filename=None):
+    if not isinstance(params, string_types):
+        params=''.join(params)
+    if plot_filename is None:
+        plot_filename=individual_name+'_'+params+'.pdf'
+    temp_data_frame_name='.'.join(plot_filename.split('.')[:-1])+'.tmpcsv'
+    with open(temp_data_frame_name, 'w') as f:
+        for hidden_sequence, chrom_name in zip(hidden_states, chrom_names):
+            for hidden_state in hidden_sequence:
+                f.write(str(hidden_state)+','+str(chrom_name)+'\n')
+    project_dir = os.path.dirname(__file__)
+    command=['Rscript',os.path.join(project_dir, 'plot_hidden_states.R'), 
+             temp_data_frame_name, 
+             params, 
+             shortcut_name_file, 
+             individual_name, 
+             plot_filename]
+    subprocess.call(command)
+    
     
     
 
-def sim_hidden_states(alleles_list, recomb_map_list, params, seq_list, generations,max_numberof_recombs,num_recombs ,full_to_short=id_dic(), short_to_full=id_dic()):
+def sim_hidden_states(likelihoods, params):
     #f=open("filepos.txt","w") 
     #chrmos=1
     #chrmos=['chrm1','chrm2a','chrm2b','chrm3','chrm4','chrm5','chrm6','chrm7','chrm8','chrm9','chrm10','chrm11','chrm12','chrm13','chrm14','chrm15','chrm16','chrm17','chrm18','chrm19','chrm20','chrm21','chrm22']
     hidden_states=[]
-    for alleles, recomb_map, seq in zip(alleles_list, recomb_map_list, seq_list):
+    for likelihood in likelihoods:
 
         #postFile="simHD_"+chrma+".txt"
         #f=open(postFile,"w")
 
-        trans_gen=generate_transition_matrix(recomb_map, generations, False, max_numberof_recombs, num_recombs)
+        trans_gen=likelihood.transition_generator
 
-        ems_gen=generate_emission_matrix(alleles, generations,max_numberof_recombs, num_recombs)
+        ems_gen=likelihood.emission_generator_function
 
-        params2=[short_to_full[p] for p in params]
-        emission_generator=ems_gen(params2)
+        params2=[likelihood.short_to_full[p] for p in params]
+        emission_generator=ems_gen(params2, log=True)
 
         #extrat_conf_index_from_emMat(alleles,generations,full_to_short,max_numberof_recombs,num_recombs)
 
-        initial=initial_matrix(generations)
+        initial=likelihood.initial_probabilities
         
-        char_map={str(i):i for i in range(6)}
+        char_map=likelihood.char_map
     
-        seq2="".join(map(str,seq))
+        seq2=likelihood.sequence
 
     #    print("Trans_Mat\n", trans_gen(0))
     #    print("Ems_Mat\n", emission_generator(0))
     #    print("Initial\n", initial)
 
-        fv, constant= tmhmm.hmm.forward2(seq2, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-
-        bv = tmhmm.hmm.backward2(seq2, constant,numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-
-        matrix=numpy.multiply(fv,bv)
-        Cj=numpy.sum(matrix, axis=1)
-        Cjreshape=Cj.reshape(len(Cj),1)
-        Pmatrix=numpy.divide(matrix,Cjreshape)
+        fv, constant= tmhmm.hmm.forward2log(seq2, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
+        print('fv',fv)
+        bv = tmhmm.hmm.backward2log(seq2, constant, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
+        print('bv',bv)
+        matrix=fv+bv
+        maxes=numpy.max(matrix, axis=1)
+        matrix-=maxes[:,numpy.newaxis]
+        matrix=numpy.exp(matrix)
+        rowsums=numpy.sum(matrix, axis=1)
+        Pmatrix=matrix/rowsums[:,numpy.newaxis]
         
         xs=[]
         N,M=Pmatrix.shape        
 
         st=numpy.random.choice(list(range(M)),1, p=Pmatrix[0,:])
 
-        xs.append(st)
+        xs.append(st[0])
 
         #states_func=extrat_conf_index_from_emMat(alleles, generations, full_to_short, max_numberof_recombs, num_recombs)
         #states=states_func(params2)
@@ -72,16 +96,25 @@ def sim_hidden_states(alleles_list, recomb_map_list, params, seq_list, generatio
         #f.write(str(correct_states[st]))
         #f.write(" ")
 
-        for j in range(1,len(seq)):
+        for j in range(1,len(seq2)):
             
-            em=emission_generator(j)
+            log_em=emission_generator(j)
             tr=trans_gen(j-1)
 
         #    P=numpy.array(numpy.asmatrix(bv)[j,:] * em[:,seq[j]].T * tr[xs[j-1],:])
-            P=numpy.array( bv[j,:] *numpy.squeeze(numpy.asarray(em[:,seq[j]].T))* numpy.squeeze(numpy.asarray(tr[xs[j-1],:])))    
-
-
-            P=P/(numpy.sum(P))
+            b=bv[j,:]
+            e=log_em[:,int(seq2[j])]
+            t=numpy.log(tr[xs[j-1],:])
+            print(b,e,t)
+            P=b+e+t 
+            print(P)
+            
+            P=P-numpy.max(P)
+            print(P)
+            P=numpy.exp(P)
+            print(P)
+            P=P/numpy.sum(P)
+            print(P)
 
             
             st=numpy.random.choice(list(range(M)),1, p=P)

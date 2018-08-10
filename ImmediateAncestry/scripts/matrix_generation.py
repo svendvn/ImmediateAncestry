@@ -86,7 +86,7 @@ def generate_emission_matrix_binned(before_dic,s):
 
     m=2**(s-1)
     M=m**2
-    def generate(params):
+    def generate(params, log=False):
         pops_mother=params[:m]
         pops_father=params[m:]
         def generator(index_of_sequence):
@@ -94,7 +94,10 @@ def generate_emission_matrix_binned(before_dic,s):
             for i,pop_mom in enumerate(pops_mother):   #the m ancestries of the mother
                 for j,pop_dad in enumerate(pops_father): #the m ancestries of the father
                     i1=i*m+j
-                    ans[i1,0]=numpy.exp(before_dic[index_of_sequence][tuple(sorted([pop_dad,pop_mom]))])
+                    if log:
+                        ans[i1,0]=before_dic[index_of_sequence][tuple(sorted([pop_dad,pop_mom]))]
+                    else:
+                        ans[i1,0]=numpy.exp(before_dic[index_of_sequence][tuple(sorted([pop_dad,pop_mom]))])
             return ans
         return generator
     
@@ -116,7 +119,7 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
         return 1.0-p
     m=2**(s-1)
     M=m**2
-    def generate(params):
+    def generate(params, log=False):
         pops_mother=params[:m]
         pops_father=params[m:]
         def generator(index_of_sequence):
@@ -140,7 +143,8 @@ def generate_emission_matrix(ancestral_allele_dictionary,s):
                     ans[i1,1]*=2
                     ans[i1,3]=1
                             
-                                
+            if log:
+                ans=numpy.log(ans)                    
             return ans
         return generator
     
