@@ -55,8 +55,8 @@ def calculate_before_dic(bin_map, ancestral_allele_frequencies, sequence, pops):
                                                          avg_af[i],
                                                          sequence[i]))
         probabilities.append(bin_probs)
-    print(len(sequence))
-    print(probabilities)
+    #print(len(sequence))
+    #print(probabilities)
     return probabilities
 
 

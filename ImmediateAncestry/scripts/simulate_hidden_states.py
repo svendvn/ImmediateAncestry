@@ -62,9 +62,9 @@ def sim_hidden_states(likelihoods, params):
     #    print("Initial\n", initial)
 
         fv, constant= tmhmm.hmm.forward2log(seq2, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-        print('fv',fv)
+        #print('fv',fv)
         bv = tmhmm.hmm.backward2log(seq2, constant, numpy.array(initial), trans_gen, emission_generator, char_map, None, None)
-        print('bv',bv)
+        #print('bv',bv)
         matrix=fv+bv
         maxes=numpy.max(matrix, axis=1)
         matrix-=maxes[:,numpy.newaxis]
@@ -105,16 +105,16 @@ def sim_hidden_states(likelihoods, params):
             b=bv[j,:]
             e=log_em[:,int(seq2[j])]
             t=numpy.log(tr[xs[j-1],:])
-            print(b,e,t)
+            #print(b,e,t)
             P=b+e+t 
-            print(P)
+            #print(P)
             
             P=P-numpy.max(P)
-            print(P)
+            #print(P)
             P=numpy.exp(P)
-            print(P)
+            #print(P)
             P=P/numpy.sum(P)
-            print(P)
+            #print(P)
 
             
             st=numpy.random.choice(list(range(M)),1, p=P)
