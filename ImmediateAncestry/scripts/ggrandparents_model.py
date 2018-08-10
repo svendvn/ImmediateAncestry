@@ -17,6 +17,8 @@ from id_dic import id_dic
 
 from itertools import product
 
+import warnings
+
 code_to_index={"A":0, "C":1, "G":2, "T":3}
 
 
@@ -94,7 +96,7 @@ class likelihood_system(object):
         return sum([lik(param,pks) for lik in self.list_of_likelihoods])
 
 
-def generate_binned_likelihood_from_data(bin_maps, alleles_list,recomb_map_list, seq_list, possible_pops, generations=3, short_to_full=id_dic, rho_infinity=False):
+def generate_binned_likelihood_from_data(bin_maps, alleles_list, recomb_map_list, seq_list, possible_pops, generations=3, short_to_full=id_dic, rho_infinity=False):
     list_of_likelihoods=[]
     for bin_map, alleles, recomb_map, seq in zip(bin_maps, alleles_list, recomb_map_list, seq_list):
         trans_gen=matrix_generation.generate_transition_matrix(recomb_map, generations, rho_infinity)
@@ -104,6 +106,9 @@ def generate_binned_likelihood_from_data(bin_maps, alleles_list,recomb_map_list,
         initial=[1.0/M]*M
         char_map={str(i):i for i in range(6)}
         seq2="0"*len(bin_map)
+        if len(bin_map)<2:
+            message='length of bin_map is just '+str(len(bin_map))
+            warnings.warn(message, UserWarning)
         list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
         
     return likelihood_system(list_of_likelihoods)

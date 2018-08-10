@@ -40,6 +40,7 @@ def generate_transition_matrix(rho_distances, s, rho_infinity=False):
     return generator
 
 def calculate_before_dic(bin_map, ancestral_allele_frequencies, sequence, pops):
+    avg_af=numpy.mean(numpy.array(list(ancestral_allele_frequencies.values())),axis=0)
     probabilities=[] #of the form [{'ee':0.331, 'et':0.1234,..., 'vv':0.0013}, {...},...,{...}].
     pop_combinations=[tuple(sorted([p1,p2])) for n,p1 in enumerate(pops) for m,p2 in enumerate(pops) if n>=m]
     for snp_list in bin_map:
@@ -50,7 +51,12 @@ def calculate_before_dic(bin_map, ancestral_allele_frequencies, sequence, pops):
                 bin_probs[pop_comb]+=numpy.log(calc_prob(ps[pop_comb[0]], 
                                                          ps[pop_comb[1]], 
                                                          sequence[i]))
+                bin_probs[pop_comb]-=numpy.log(calc_prob(avg_af[i],
+                                                         avg_af[i],
+                                                         sequence[i]))
         probabilities.append(bin_probs)
+    print(len(sequence))
+    print(probabilities)
     return probabilities
 
 
