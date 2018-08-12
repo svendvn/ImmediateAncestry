@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from numpy.random import choice
+from numpy.random import choice, randint
 from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data
 from simulate_data import simulate, simulate_recombs, simulate_allele_frequencies
 from recombination import read_recombination_file
@@ -12,6 +12,7 @@ from id_dic import id_dic
 from mock_likelihood import mock_likelihood
 from print_structure import print_recombination_structure, print_sequence_structure
 from simulate_hidden_states import plot_hidden_states, sim_hidden_states
+from simulate_configuration import sim_config
 import re
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
@@ -70,6 +71,7 @@ parser.add_argument("--ancestor_files", type=str, default=[], nargs="+", help="T
 parser.add_argument("--SNPs", type=int, default=0, help="this is the number of SNPs to simulate per segment. If any input files are specified this will be ignored(because then the number of SNPs will match the number of SNPs in the input files).")
 parser.add_argument("--mcmc_reps", type=int, default=300, help="this is the number of runs of the MCMC (if used).")
 parser.add_argument("--reps", type=int, default=1, help="This is the number of independent segments of SNPs to draw if simulated")
+parser.add_argument('--simulated_true_pops', type=str, default='specified', choices=['specified','uniform'], help='if the sequence is simulated, this specifies how to simulate the true configuration. If uniform, the populations to choose from is set in true_pops.')
 parser.add_argument("--true_pops", type=str, nargs="+", default=[], help="If simulations take place, this will be the true ancestors. It has to be of length 2**generations*ancestor_multiplier")
 parser.add_argument('--no_pops', type=int, default=4, help='the number of populations.')
 parser.add_argument('--ancestor_multiplier', type=int, default=1, help='the number of sets of ancestors are simulated. If more than one, the analysis will also be run more than once.')
@@ -107,7 +109,18 @@ else:
     full_to_short, short_to_full=id_dic(), id_dic()
     
 options.short_to_full=short_to_full
-    
+
+if options.simulated_true_pops=='uniform':
+    assert options.true_pops, 'The true pops has to be specified to choose the populations'
+    max_complexity=2**options.generations
+    complexity=randint(0,max_complexity)
+    options.true_pops=sim_config(options.true_pops, complexity, options.generations)
+    if options.auto_outfile_name:
+        options.outfiles=['s'+str(complexity)+
+                          '_'+''.join(options.true_pops)+
+                          '_'+str(j)+
+                          '_'+str(options.auto_outfile_id)+
+                          '.out' for j in range(options.sequence_multiplier)]
 if options.true_pops:
     options.true_pops=parse_configs(options.true_pops, options.generations, short_to_full=id_dic())
     print(options.true_pops)
@@ -132,7 +145,7 @@ else:
 print_recombination_structure(recombination_map)
 print_sequence_structure(sequences)
 
-if options.auto_outfile_name:
+if options.auto_outfile_name and not options.simulated_true_pops:
     outfiles=[]
     for true_p in options.true_pops:
         for j in range(options.sequence_multiplier):
