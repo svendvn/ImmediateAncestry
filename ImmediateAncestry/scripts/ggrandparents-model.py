@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from numpy.random import choice, randint
-from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data
+from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data, find_smallet_equivalence_class
 from simulate_data import simulate, simulate_recombs, simulate_allele_frequencies
 from recombination import read_recombination_file
 from construct_seqs import get_seqs
@@ -12,7 +12,7 @@ from id_dic import id_dic
 from mock_likelihood import mock_likelihood
 from print_structure import print_recombination_structure, print_sequence_structure
 from simulate_hidden_states import plot_hidden_states, sim_hidden_states
-from simulate_configuration import sim_config
+from simulate_configurations import sim_config
 import re
 
 usage="""This program generates a likelihood given the inputs: sequence, allele frequencies, and genetic, recombinational distances.
@@ -117,7 +117,7 @@ if options.simulated_true_pops=='uniform':
     options.true_pops=sim_config(options.true_pops, complexity, options.generations)
     if options.auto_outfile_name:
         options.outfiles=['s'+str(complexity)+
-                          '_'+''.join(options.true_pops)+
+                          '_'+''.join(find_smallet_equivalence_class(options.true_pops))+
                           '_'+str(j)+
                           '_'+str(options.auto_outfile_id)+
                           '.out' for j in range(options.sequence_multiplier)]
@@ -145,11 +145,11 @@ else:
 print_recombination_structure(recombination_map)
 print_sequence_structure(sequences)
 
-if options.auto_outfile_name and not options.simulated_true_pops:
+if options.auto_outfile_name and options.simulated_true_pops=='specified':
     outfiles=[]
     for true_p in options.true_pops:
         for j in range(options.sequence_multiplier):
-            filename=''.join(true_p)+'_'+str(j)+'_'+str(options.auto_outfile_id)
+            filename=''.join(true_p)+'_'+str(j)+'_'+str(options.auto_outfile_id)+'.out'
             outfiles.append(filename)
     options.outfiles=outfiles
     
