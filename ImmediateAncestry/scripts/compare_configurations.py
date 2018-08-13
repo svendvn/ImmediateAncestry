@@ -88,18 +88,19 @@ if __name__=='__main__':
     parser = ArgumentParser(usage=usage)
     
     #input/output arguments
-    parser.add_argument("--config_file", type=str, default='s0_tttt_0_g2_b10_w3_i55.out', help='file_to_read_From')
-    parser.add_argument('--output_file', type=str, default='tmp_out.txt', help='file to write results to') 
+    parser.add_argument("--config_file", type=str, nargs='*', default=['s0_tttt_0_g2_b10_w3_i55.out'], help='file_to_read_From')
+    parser.add_argument('--output_file_suffix', type=str, default='2', help='file to write results to') 
                         
     options=parser.parse_args()
     
-    info_dic=get_info_from_file_name_aug13(options.config_file)
-    info_dic['inferred']=get_config_from_file(options.config_file)
-    dist=distance(find_smallest_equivalence_class(info_dic['inferred']),
-                  find_smallest_equivalence_class(info_dic['true_config']))
-    info_dic['distance']=str(dist[0])
-    info_dic['overrepresented']=str(dist[1])
-    write_to_file(info_dic, options.output_file)
+    for conf_file in options.config_file:
+        info_dic=get_info_from_file_name_aug13(conf_file)
+        info_dic['inferred']=get_config_from_file(conf_file)
+        dist=distance(find_smallest_equivalence_class(info_dic['inferred']),
+                      find_smallest_equivalence_class(info_dic['true_config']))
+        info_dic['distance']=str(dist[0])
+        info_dic['overrepresented']=str(dist[1])
+        write_to_file(info_dic, conf_file+options.output_file_suffix)
 
     
     print(distance("eeteeeee","eeeeeeee"))
