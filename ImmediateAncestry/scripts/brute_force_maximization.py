@@ -1,4 +1,4 @@
-from ggrandparents_model import find_smallet_equivalence_class
+from configuration_classes import find_smallest_equivalence_class
 from itertools import product
 
 def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from, generations=3):
@@ -8,7 +8,7 @@ def maximize_likelihood_exhaustive(likelihood, pops_to_choose_from, generations=
     n=2**generations
     print('pops_to_choose_from', pops_to_choose_from)
     for itera in product(*([pops_to_choose_from]*n)):
-        if find_smallet_equivalence_class(itera) in combinations:
+        if find_smallest_equivalence_class(itera) in combinations:
             print(str(itera), "skipped")
             continue
         counter+=1

@@ -17,6 +17,8 @@ from id_dic import id_dic
 
 from itertools import product
 
+from configuration_classes import find_smallest_equivalence_class
+
 import warnings
 
 code_to_index={"A":0, "C":1, "G":2, "T":3}
@@ -56,7 +58,7 @@ class likelihood_class(object):
         
     def __call__(self, params, pks={}):
         
-        reduced=tuple(find_smallet_equivalence_class(params))
+        reduced=tuple(find_smallest_equivalence_class(params))
         if reduced in self.values_dic:
             return self.values_dic[reduced]
         else:
@@ -161,36 +163,7 @@ def transform_from_fasta_to_index(x, ma="C"):
         return index
     return transform2(transform(x))
 
-def get_val(listi):
-    return "".join(listi)
 
-def get_best_of_size(listi, size):
-    assert len(listi)%size==0, "wrong list size"
-    assert size%2==0, "wrong size"
-    band=listi
-    h= size//2
-    bval= get_val(listi)
-    for i in range(len(listi)//size):
-        cand=band[:(size*i)]+\
-                band[(size*i+h):(size*(i+1))]+\
-                band[(size*i):(size*i+h)]+\
-                band[(size*(i+1)):]
-        
-        cval=get_val(cand)
-        if cval<bval:
-            band=cand
-            bval=cval
-    return bval
-
-
-
-def find_smallet_equivalence_class(params):
-    size=2
-    best_combi=params
-    while size<=len(params):
-        best_combi=get_best_of_size(best_combi, size)
-        size*=2
-    return best_combi
     
         
 
@@ -200,23 +173,25 @@ if __name__ == '__main__':
     #print(call_forward())
     #lik=test_model_likelihood(8)
     #print(maximize_likelihood_exhaustive(lik,["pop1","pop2"]))
-    print(find_smallet_equivalence_class(["a","b","a","a","a","b","a","a"]))
-    n=2**4
-    combinations=[]
-    counter=0
-    for a,itera in enumerate(product(*([['a','b','c','d']]*n))):
-        #print(itera)
-        if a%10000==0:
-            print(itera)
-        if find_smallet_equivalence_class(itera) in combinations:
-            #print(str(itera), "skipped")
-            continue
-        counter+=1
-        #combinations.append(itera)
-        
-        #likelihoods.append(counter)
-        #print(itera)
-    print('counter',counter)
+    print(find_smallest_equivalence_class('eevt'))
+    print(find_smallest_equivalence_class(list('eevt')))
+#     print(find_smallet_equivalence_class(["a","b","a","a","a","b","a","a"]))
+#     n=2**4
+#     combinations=[]
+#     counter=0
+#     for a,itera in enumerate(product(*([['a','b','c','d']]*n))):
+#         #print(itera)
+#         if a%10000==0:
+#             print(itera)
+#         if find_smallet_equivalence_class(itera) in combinations:
+#             #print(str(itera), "skipped")
+#             continue
+#         counter+=1
+#         #combinations.append(itera)
+#         
+#         #likelihoods.append(counter)
+#         #print(itera)
+#     print('counter',counter)
         
     
     

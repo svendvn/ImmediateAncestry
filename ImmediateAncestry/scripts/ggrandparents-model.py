@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from numpy.random import choice, randint
-from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data, find_smallet_equivalence_class
+from ggrandparents_model import generate_likelihood_from_data, generate_binned_likelihood_from_data
+from configuration_classes import find_smallest_equivalence_class
 from simulate_data import simulate, simulate_recombs, simulate_allele_frequencies
 from recombination import read_recombination_file
 from construct_seqs import get_seqs
@@ -117,7 +118,7 @@ if options.simulated_true_pops=='uniform':
     options.true_pops=sim_config(options.true_pops, complexity, options.generations)
     if options.auto_outfile_name:
         options.outfiles=['s'+str(complexity)+
-                          '_'+''.join(find_smallet_equivalence_class(options.true_pops))+
+                          '_'+''.join(find_smallest_equivalence_class(options.true_pops))+
                           '_'+str(j)+
                           '_'+str(options.auto_outfile_id)+
                           '.out' for j in range(options.sequence_multiplier)]
