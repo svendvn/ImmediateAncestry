@@ -18,6 +18,7 @@ def get_perm_number(candidate, true):
     return 3
 
 def distance(candidate, true):
+    max_num=len(candidate)
     if candidate==true:
         return "=",""
     hist1=dict((x, candidate.count(x)) for x in candidate)
@@ -39,16 +40,16 @@ def distance(candidate, true):
     if no_diffs==1:
         ans+="h1_"
         perm_numbers=[]
-        for n in range(8):
+        for n in range(max_num):
             if candidate[n] in overscorer:
                 candcand=list(candidate)
                 candcand[n]=underscorer
                 perm_numbers.append(get_perm_number("".join(candcand), true))
         perm_number=min(perm_numbers)
-    elif no_diffs==2:
-        return "h2?", overscorer
     elif no_diffs==0:
         perm_number=get_perm_number(candidate, true)
+    elif no_diffs>=2:
+        return 'h'+str(no_diffs)+'?', overscorer
     converter=["=","1w","1b","+"]
     ans+=converter[perm_number]
     return ans,overscorer
