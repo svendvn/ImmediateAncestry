@@ -139,11 +139,11 @@ outp = get_seqs(options,  extra_info)
 
 
 if 9 in options.sequences_pipeline:
-    sequences, allele_frequencies, recombination_map, bin_maps= outp
+    sequences, allele_frequencies, recombs, bin_maps= outp
 else:
-    sequences, allele_frequencies, recombination_map= outp
+    sequences, allele_frequencies, recombs= outp
 
-print_recombination_structure(recombination_map)
+print_recombination_structure(recombs)
 print_sequence_structure(sequences)
 
 if options.auto_outfile_name and options.simulated_true_pops=='specified':

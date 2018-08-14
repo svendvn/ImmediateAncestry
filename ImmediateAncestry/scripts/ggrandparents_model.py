@@ -47,7 +47,8 @@ code_to_index={"A":0, "C":1, "G":2, "T":3}
     
 class likelihood_class(object):
     
-    def __init__(self, transition_generator, emission_generator_function, initial_probabilities, sequence, char_map, short_to_full):
+    def __init__(self, transition_generator, emission_generator_function, initial_probabilities, sequence, char_map, short_to_full, log_stable_likelihood=False):
+        self.log_stable_likelihood=log_stable_likelihood
         self.transition_generator=transition_generator
         self.emission_generator_function=emission_generator_function
         self.initial_probabilities=initial_probabilities
@@ -63,15 +64,27 @@ class likelihood_class(object):
             return self.values_dic[reduced]
         else:
             params2=[self.short_to_full[p] for p in params]
-            emission_generator=self.emission_generator_function(params2, log=True)
-            _, Cs= tmhmm.hmm.forward2log(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
-            res=0
-            for C in Cs:
-                if not numpy.isfinite(C):
-                    self.values_dic[reduced]=-float('Inf')
-                    return -float('Inf')
-                res=res+C
-            self.values_dic[reduced]=res
+            if self.log_stable_likelihood:
+                  emission_generator=self.emission_generator_function(params2, log=True)
+                  _, Cs= tmhmm.hmm.forward2log(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
+                  res=0
+                  for C in Cs:
+                       if not numpy.isfinite(C):
+                           self.values_dic[reduced]=-float('Inf')
+                           return -float('Inf')
+                       res=res+C
+                  self.values_dic[reduced]=res
+            else:
+                  emission_generator=self.emission_generator_function(params2, log=False)
+                  _, Cs= tmhmm.hmm.forward2(self.sequence, numpy.array(self.initial_probabilities), self.transition_generator, emission_generator, self.char_map, None, None)
+                  res=0
+                  for C in Cs:
+                        if C<=0:
+                              self.values_dic[reduced]=-float('Inf')
+                              return -float('Inf')
+                        res=res+log(C)
+                  self.values_dic[reduced]=res
+
             return res
     
 # def generate_likelihood_from_generators(transition_generator, emission_generator_function, initial_probabilities, sequence, char_map):
@@ -111,7 +124,7 @@ def generate_binned_likelihood_from_data(bin_maps, alleles_list, recomb_map_list
         if len(bin_map)<2:
             message='length of bin_map is just '+str(len(bin_map))
             warnings.warn(message, UserWarning)
-        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
+        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full, log_stable_likelihood=True))
         
     return likelihood_system(list_of_likelihoods)
     
@@ -125,7 +138,7 @@ def generate_likelihood_from_data(alleles_list, recomb_map_list, seq_list, gener
         initial=[1.0/M]*M
         char_map={str(i):i for i in range(6)}
         seq2="".join(map(str,seq))
-        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full))
+        list_of_likelihoods.append(likelihood_class(trans_gen, ems_gen, initial, seq2, char_map, short_to_full, log_stable_likelihood=False))
         
     return likelihood_system(list_of_likelihoods)
     

@@ -31,6 +31,7 @@ def initial_matrix(generations):
     return M
 
 def generate_transition_matrix(rho_distances, s, rho_infinity=False):
+    print('length of rho distances', len(rho_distances))
     if rho_infinity:
         def inf_rho_generator(index_of_sequence):
             return infinity_transition_matrix(s)
