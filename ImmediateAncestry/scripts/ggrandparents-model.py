@@ -92,13 +92,15 @@ parser.add_argument('--shortcut_names', type=str, default='shortcut_names2.txt',
 parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coefficient. If it is n, for each chromosome n new chromosomes will be made. If an original sequence is 1,2,3,4,5,.., a new sequences will be j,n+j,2n+j,.., for j=1,...,n. One has to put 7 8 in the sequences pipeline')
 parser.add_argument('--bin_window_size', type=int, default=1, help='The number of SNPs per bin.')
 parser.add_argument('--sim_and_plot_hidden_states', action='store_true', default=False, help='Will plot simulated hidden states for the best configuration')
+parser.add_argument('--rescale_recombinations_factor', type=float, default=1.0, help='This will change the recombination rate globally with this factor. 10 should be in the sequence pipeline')
 
 #annealing arguments
 
 options = parser.parse_args()
 
-assert (options.thin_coef>1)==(8 in options.sequences_pipeline), 'If thin_coef is not 1, 8 should be added to the covariance pipeline'
-assert (options.bin_window_size>1)==(9 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the covariance pipeline'
+assert (options.thin_coef>1)==(8 in options.sequences_pipeline), 'If thin_coef is not 1, 8 should be added to the sequence pipeline'
+assert (options.bin_window_size>1)==(9 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the sequence pipeline'
+assert (options.rescale_recombinations_factor!=1.0)==(10 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the sequence pipeline'
 
 
 if options.shortcut_names:

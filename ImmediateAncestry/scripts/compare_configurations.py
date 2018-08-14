@@ -102,6 +102,8 @@ if __name__=='__main__':
         info_dic['distance']=str(dist[0])
         info_dic['overrepresented']=str(dist[1])
         write_to_file(info_dic, conf_file+options.output_file_suffix)
+        
+    print(sorted(info_dic.keys()))
 
     
     print(distance("eeteeeee","eeeeeeee"))

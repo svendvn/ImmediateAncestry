@@ -1,4 +1,6 @@
 from numpy.random import choice, randint
+from itertools import permutations
+from configuration_classes import find_smallest_equivalence_class
 
 def full_sequence(p):
     for r1,r2 in zip(p[::2],p[1::2]):
@@ -56,7 +58,22 @@ def sim_config(pops, complexity, generations=3):
         sequence[start_slice : end_slice]=simulate_two(candidate_sequence, pops)
     return sequence
 
+def get_configuration_class_size(pops, generations, complexity,N=100):
+    res=[]
+    for _ in range(N):
+        config=find_smallest_equivalence_class(sim_config(pops, complexity, generations))
+        count=0
+        total_count=0
+        for permut_config in permutations(config):
+            if find_smallest_equivalence_class(permut_config)==config:
+                count+=1
+            total_count+=1
+        res.append(count)
+        print(config)
+    return total_count, res
+                
 if __name__=='__main__':
     pops=list('estv')
     print(sim_config(pops,7,4))
+    print(get_configuration_class_size(pops, 2, 2, 5))
     

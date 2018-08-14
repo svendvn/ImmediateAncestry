@@ -2,6 +2,8 @@ from simulate_data import simulate_allele_frequencies, sim_ancestries, simulate_
 from numpy.random import choice
 from rethin import rethin_sequences, rethin_allele_frequencies, rethin_recombination
 from snp_binner import collapse_recombination_map, bin_sequences
+from rescale_recombinations import rescale
+from numpy.numarray.alter_code1 import new_re
 
 
 def rethin_wrapper(statistic, options, extra_info):
@@ -16,6 +18,17 @@ def bin_wrapper(statistic, options, extra_info):
     bin_maps=bin_sequences(sequences, options.bin_window_size)
     new_recombs=collapse_recombination_map(recombs,bin_maps)
     return sequences, allele_frequencies, new_recombs, bin_maps
+
+def rescale_wrapper(statistic, options, extra_info):
+    if len(statistic)==4:
+        sequences, allele_frequencies, recombs, bin_maps=statistic
+    else:
+        sequences, allele_frequencies, recombs = statistic
+    new_recombs=rescale(recombs, options.rescale_recombinations_factor)
+    if len(statistic)==4:
+        return sequences, allele_frequencies, new_recombs, bin_maps
+    else:
+        return sequences, allele_frequencies, new_recombs
     
     
 
