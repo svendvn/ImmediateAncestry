@@ -108,13 +108,13 @@ if 9 in options.sequences_pipeline and options.bin_window_size<=1:
     warnings.warn('Binning window size interpreted as 1; cancelling the binning operation',UserWarning)
     options.sequences_pipeline.remove(9)
     options.bin_window_size=1
-if 10 in options.sequences_pipeline and options.rescale_recombinations_factor<1.001 and options.rescale_recombinations_factor<0.999:
+if 10 in options.sequences_pipeline and options.rescale_recombinations_factor<1.001 and options.rescale_recombinations_factor>0.999:
     warnings.warn('rescale factor interpreted as 1; cancelling the rescaling operation',UserWarning)
     options.sequences_pipeline.remove(10)
     options.rescale_recombinations_factor=1.0
 assert (options.thin_coef>1)==(8 in options.sequences_pipeline), 'If thin_coef is not 1, 8 should be added to the sequence pipeline'
 assert (options.bin_window_size>1)==(9 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the sequence pipeline'
-assert (options.rescale_recombinations_factor!=1.0)==(10 in options.sequences_pipeline), 'If bin_window_size is not 1, 9 should be added to the sequence pipeline'
+assert (options.rescale_recombinations_factor!=1.0)==(10 in options.sequences_pipeline), 'If rescale_recombination_factor is not 1, 10 should be added to the sequence pipeline'
 
 
 if options.shortcut_names:
