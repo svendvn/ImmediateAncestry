@@ -73,7 +73,19 @@ def get_info_from_file_name_aug13(config_file):
     res['bin_size']=int(parts[4][1:])
     res['simulation']=int(parts[5][1:])
     res['id_number']=int(parts[6][1:].split('.')[0])
+    
     return res
+
+def get_info_from_file_name_sep3(config_file):
+    
+    res={}
+    parts=config_file.split('_')
+    res['complexity']=int(parts[0][1:])
+    res['true_config']=parts[1]
+    res['bins']=int(parts[3][1:])
+    res['rescale']=int(parts[4][1:])
+    res['thinning']=int(parts[5][1:])
+    res['id_number']=int(parts[6][1:].split('.')[0])
 
 def write_to_file(dic, filename='tmp.out'):
     ad=sorted(list(dic.items()))
@@ -91,11 +103,17 @@ if __name__=='__main__':
     #input/output arguments
     parser.add_argument("--config_file", type=str, nargs='*', default=['s0_tttt_0_g2_b10_w3_i55.out'], help='file_to_read_From')
     parser.add_argument('--output_file_suffix', type=str, default='2', help='file to write results to') 
+    parser.add_argument('--sep3', default=False, action='store_true', help='analyze according to the files from september 3rd 2018')         
                         
     options=parser.parse_args()
     
     for conf_file in options.config_file:
-        info_dic=get_info_from_file_name_aug13(conf_file)
+        #info_dic=get_info_from_file_name_aug13(conf_file)
+        if option.setp3:
+            info_dic=get_info_from_file_name_sep3(conf_file)
+        else:
+            info_dic=get_info_from_file_name_aug13(conf_file)
+        
         info_dic['inferred']=get_config_from_file(conf_file)
         dist=distance(find_smallest_equivalence_class(info_dic['inferred']),
                       find_smallest_equivalence_class(info_dic['true_config']))
