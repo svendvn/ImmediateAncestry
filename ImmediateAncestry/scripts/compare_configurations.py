@@ -111,7 +111,7 @@ if __name__=='__main__':
     
     for conf_file in options.config_file:
         #info_dic=get_info_from_file_name_aug13(conf_file)
-        if option.sep3:
+        if options.sep3:
             info_dic=get_info_from_file_name_sep3(conf_file)
         else:
             info_dic=get_info_from_file_name_aug13(conf_file)
