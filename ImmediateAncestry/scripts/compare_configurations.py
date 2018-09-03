@@ -86,6 +86,8 @@ def get_info_from_file_name_sep3(config_file):
     res['rescale']=int(parts[4][1:])
     res['thinning']=int(parts[5][1:])
     res['id_number']=int(parts[6][1:].split('.')[0])
+    
+    return res
 
 def write_to_file(dic, filename='tmp.out'):
     ad=sorted(list(dic.items()))
@@ -109,7 +111,7 @@ if __name__=='__main__':
     
     for conf_file in options.config_file:
         #info_dic=get_info_from_file_name_aug13(conf_file)
-        if option.setp3:
+        if option.sep3:
             info_dic=get_info_from_file_name_sep3(conf_file)
         else:
             info_dic=get_info_from_file_name_aug13(conf_file)
