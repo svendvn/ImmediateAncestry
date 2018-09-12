@@ -9,7 +9,7 @@ plot_filename=args[5]
 short_names=strsplit(possible_names,split='')[[1]]
 
 df=read.csv(hidden_states_file, header=F, stringsAsFactors = F)
-print(df)
+#print(df)
 colnames(df) <- c('State','Chromosome')
 
 params=strsplit(parameters,split='')[[1]]

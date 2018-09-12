@@ -1,10 +1,10 @@
 import numpy
 from copy import deepcopy
-#import tmhmm
+import tmhmm
 
 def get_states(num, m):
-    mother_i=num%m
-    father_i=num//m
+    mother_i=num//m
+    father_i=num%m
     return mother_i,  father_i
 
 def refine_estimates_from_posterior_decoding(params, posterior_decodings):
@@ -14,12 +14,15 @@ def refine_estimates_from_posterior_decoding(params, posterior_decodings):
     for posterior_decoding_matrix in posterior_decodings:
         new_v=numpy.sum(posterior_decoding_matrix,  axis=0)
         count_vector=[c+v for c, v in zip(count_vector,  new_v)]
+    print('joint counts',count_vector)
     mother_counts=[0]*m
     father_counts=[0]*m
     for double_states_index,  count_val in enumerate(count_vector):
         mother_i,  father_i=get_states(double_states_index,  m)
         mother_counts[mother_i]+=count_val
         father_counts[father_i]+=count_val
+    print('mother counts', mother_counts)
+    print('father counts', father_counts)
     mimin, mmin=numpy.argmin(mother_counts),  numpy.min(mother_counts)
     mimax, mmax=numpy.argmax(mother_counts),  numpy.max(mother_counts)
     fimin, fmin=numpy.argmin(father_counts),  numpy.min(father_counts)
@@ -29,10 +32,11 @@ def refine_estimates_from_posterior_decoding(params, posterior_decodings):
         new_params[mimin]=new_params[mimax]
     if fmin*3<fmax:
         new_params[m+fimin]=new_params[m+fimax]
+        print('exchanging a',  new_params[fimin],  'for a',  new_params[fimax])
     return ''.join(new_params)
     
 
-def refine_estimates(likelihoods,  params):
+def refine_estimate(likelihoods,  params):
     posterior_decodings=posterior_decoding(likelihoods,  params)
     return refine_estimates_from_posterior_decoding(params,  posterior_decodings)
 
