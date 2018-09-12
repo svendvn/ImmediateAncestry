@@ -33,7 +33,7 @@ def refine_estimates_from_posterior_decoding(params, posterior_decodings):
     if fmin*3<fmax:
         new_params[m+fimin]=new_params[m+fimax]
         print('exchanging a',  new_params[fimin],  'for a',  new_params[fimax])
-    return ''.join(new_params)
+    return mother_counts+father_counts,''.join(new_params)
     
 
 def refine_estimate(likelihoods,  params):

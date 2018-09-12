@@ -279,7 +279,8 @@ for bd,outfile, likelihood_system in zip(ad, options.outfiles, likelihoods):
         print(hidden_states)
         plot_hidden_states(best_params, hidden_states, chrom_names, individual_name, possible_pops, plot_filename=None)
     if options.posterior_adjusted_estimate:
-        refined_estimate=refine_estimate(likelihood_system.list_of_likelihoods,  best_params)     
+        total_probs,  refined_estimate=refine_estimate(likelihood_system.list_of_likelihoods,  best_params)     
         with open(outfile+'_refined', 'w') as f:
             f.write(str(refined_estimate)+'\n')
-
+            f.write(' '.join(total_probs)+'\n')
+            f.write(' '.join(list(best_params))+'\n')
