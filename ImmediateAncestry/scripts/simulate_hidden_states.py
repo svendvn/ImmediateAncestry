@@ -29,6 +29,20 @@ def plot_hidden_states(params, hidden_states, chrom_names, individual_name, shor
              plot_filename]
     subprocess.call(command)
     
+def get_states(num, params):
+    m=len(params)//2
+    gens=int(round(log(m)/log(2.0)))
+    mother_i=num%m
+    father_i=num//m
+    mother=''
+
+def refine_estimate(params, hidden_states, params):
+    for hidden_sequence in hidden_states:
+        for hidden_state in hidden_sequence:
+            get_states()
+            
+    
+    
     
     
 
