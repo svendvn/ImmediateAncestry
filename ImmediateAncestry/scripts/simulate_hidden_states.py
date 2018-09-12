@@ -30,31 +30,7 @@ def plot_hidden_states(params, hidden_states, chrom_names, individual_name, shor
              plot_filename]
     subprocess.call(command)
     
-def get_states(num, m):
-    m=len(params)//2
-    mother_i=num%m
-    father_i=num//m
-    return mother_i,  father_i
 
-def refine_estimate(params, hidden_states, params):
-    count_dic=Counter(params)
-    m=len(params)//2
-    mother_counts=[0]*m
-    father_counts=[0]*m
-    for double_states_index,  count_val in count_dic.items():
-        mother_i,  father_i=get_states(double_states_index,  m)
-        mother_counts[mother_i]+=count_val
-        father_counts[father_i]+=father_val
-    first_half=[count_dic[i] for i in range(len(params)//2)]
-    second_half=[count_dic[i] for in range(len(params)//2,  len(params))]
-    
-    for hidden_sequence in hidden_states:
-        for hidden_state in hidden_sequence:
-            get_states()
-            
-    
-    
-    
     
 
 def sim_hidden_states(likelihoods, params):
