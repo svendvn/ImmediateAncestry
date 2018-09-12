@@ -14,6 +14,7 @@ from mock_likelihood import mock_likelihood
 from print_structure import print_recombination_structure, print_sequence_structure
 from simulate_hidden_states import plot_hidden_states, sim_hidden_states
 from simulate_configurations import sim_config
+from posterior_decoding import refine_estimate
 import re
 import warnings
 
@@ -95,6 +96,8 @@ parser.add_argument('--thin_coef', type=int, default=1, help='The thinning coeff
 parser.add_argument('--bin_window_size', type=int, default=1, help='The number of SNPs per bin.')
 parser.add_argument('--sim_and_plot_hidden_states', action='store_true', default=False, help='Will plot simulated hidden states for the best configuration')
 parser.add_argument('--rescale_recombinations_factor', type=float, default=1.0, help='This will change the recombination rate globally with this factor. 10 should be in the sequence pipeline')
+parser.add_argument('--posterior_adjusted_estimate', action='store_true', default=False, help='Will make a secondary file with a posterior check of the parameters.')
+
 
 #annealing arguments
 
@@ -275,6 +278,8 @@ for bd,outfile, likelihood_system in zip(ad, options.outfiles, likelihoods):
         possible_pops=''.join(popn)
         print(hidden_states)
         plot_hidden_states(best_params, hidden_states, chrom_names, individual_name, possible_pops, plot_filename=None)
-        
-
+    if options.posterior_adjusted_estimate:
+        refined_estimate=refine_estimate(likelihood_system.list_of_likelihoods,  best_params)     
+        with open(outfile+'_refined', 'w') as f:
+            f.write(str(refined_estimate)+'\n')
 
