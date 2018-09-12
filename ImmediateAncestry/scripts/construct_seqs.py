@@ -3,7 +3,6 @@ from numpy.random import choice
 from rethin import rethin_sequences, rethin_allele_frequencies, rethin_recombination
 from snp_binner import collapse_recombination_map, bin_sequences
 from rescale_recombinations import rescale
-from numpy.numarray.alter_code1 import new_re
 
 
 def rethin_wrapper(statistic, options, extra_info):
@@ -161,7 +160,10 @@ transitions={
              (6,7): package_the_deal_wrapper,
              (7,8): rethin_wrapper,
              (7,9): bin_wrapper,
-             (8,9): bin_wrapper
+             (8,9): bin_wrapper,
+             (7,10): rescale_wrapper,
+             (8,10): rescale_wrapper,
+             (9,10): rescale_wrapper
              }
 
 
